@@ -73,6 +73,14 @@ forest sets, the NimbeKit UI collection (licensed), game-icons.net
 (CC-BY 3.0), Kenney and RPG audio packs, Cinzel and MedievalSharp
 (SIL OFL). Full per-pack credits live alongside the assets they describe.
 
+# libs
+
+Third-party JavaScript libraries, vendored into the repo. Never loaded from a CDN.
+
+- One folder per library, version pinned (e.g. three/r182/)
+- The library's license file ships alongside its code
+- Upgrade by replacing a folder wholesale, never by mixing versions
+
 ## Credits
 
 **Designed and Made by Relic & Ember Studios** — *We wake worlds.*
