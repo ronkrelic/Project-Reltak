@@ -1,0 +1,1762 @@
+[
+  {
+    "id": 1,
+    "name": "Star sword",
+    "file": "Icons/128px/001 Star sword.png",
+    "atlas128": {
+      "x": 0,
+      "y": 0,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 2,
+    "name": "Crescent blade",
+    "file": "Icons/128px/002 Crescent blade.png",
+    "atlas128": {
+      "x": 128,
+      "y": 0,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 3,
+    "name": "Sun spear",
+    "file": "Icons/128px/003 Sun spear.png",
+    "atlas128": {
+      "x": 256,
+      "y": 0,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 4,
+    "name": "Comet bow",
+    "file": "Icons/128px/004 Comet bow.png",
+    "atlas128": {
+      "x": 384,
+      "y": 0,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 5,
+    "name": "Crystal dagger",
+    "file": "Icons/128px/005 Crystal dagger.png",
+    "atlas128": {
+      "x": 512,
+      "y": 0,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 6,
+    "name": "Moon staff",
+    "file": "Icons/128px/006 Moon staff.png",
+    "atlas128": {
+      "x": 640,
+      "y": 0,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 7,
+    "name": "Orbit wand",
+    "file": "Icons/128px/007 Orbit wand.png",
+    "atlas128": {
+      "x": 768,
+      "y": 0,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 8,
+    "name": "Meteor hammer",
+    "file": "Icons/128px/008 Meteor hammer.png",
+    "atlas128": {
+      "x": 896,
+      "y": 0,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 9,
+    "name": "Sun shield",
+    "file": "Icons/128px/009 Sun shield.png",
+    "atlas128": {
+      "x": 1024,
+      "y": 0,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 10,
+    "name": "Moon shield",
+    "file": "Icons/128px/010 Moon shield.png",
+    "atlas128": {
+      "x": 1152,
+      "y": 0,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 11,
+    "name": "Crystal helmet",
+    "file": "Icons/128px/011 Crystal helmet.png",
+    "atlas128": {
+      "x": 1280,
+      "y": 0,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 12,
+    "name": "Star crown",
+    "file": "Icons/128px/012 Star crown.png",
+    "atlas128": {
+      "x": 1408,
+      "y": 0,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 13,
+    "name": "Wizard hat",
+    "file": "Icons/128px/013 Wizard hat.png",
+    "atlas128": {
+      "x": 1536,
+      "y": 0,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 14,
+    "name": "Astral robe",
+    "file": "Icons/128px/014 Astral robe.png",
+    "atlas128": {
+      "x": 1664,
+      "y": 0,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 15,
+    "name": "Celestial gloves",
+    "file": "Icons/128px/015 Celestial gloves.png",
+    "atlas128": {
+      "x": 1792,
+      "y": 0,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 16,
+    "name": "Winged boots",
+    "file": "Icons/128px/016 Winged boots.png",
+    "atlas128": {
+      "x": 1920,
+      "y": 0,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 17,
+    "name": "Mana potion",
+    "file": "Icons/128px/017 Mana potion.png",
+    "atlas128": {
+      "x": 0,
+      "y": 128,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 18,
+    "name": "Starlight flask",
+    "file": "Icons/128px/018 Starlight flask.png",
+    "atlas128": {
+      "x": 128,
+      "y": 128,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 19,
+    "name": "Moonwater bottle",
+    "file": "Icons/128px/019 Moonwater bottle.png",
+    "atlas128": {
+      "x": 256,
+      "y": 128,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 20,
+    "name": "Solar elixir",
+    "file": "Icons/128px/020 Solar elixir.png",
+    "atlas128": {
+      "x": 384,
+      "y": 128,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 21,
+    "name": "Cosmic dust jar",
+    "file": "Icons/128px/021 Cosmic dust jar.png",
+    "atlas128": {
+      "x": 512,
+      "y": 128,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 22,
+    "name": "Nebula phial",
+    "file": "Icons/128px/022 Nebula phial.png",
+    "atlas128": {
+      "x": 640,
+      "y": 128,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 23,
+    "name": "Aether vial",
+    "file": "Icons/128px/023 Aether vial.png",
+    "atlas128": {
+      "x": 768,
+      "y": 128,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 24,
+    "name": "Aurora tonic",
+    "file": "Icons/128px/024 Aurora tonic.png",
+    "atlas128": {
+      "x": 896,
+      "y": 128,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 25,
+    "name": "Sapphire crystal",
+    "file": "Icons/128px/025 Sapphire crystal.png",
+    "atlas128": {
+      "x": 1024,
+      "y": 128,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 26,
+    "name": "Turquoise shard",
+    "file": "Icons/128px/026 Turquoise shard.png",
+    "atlas128": {
+      "x": 1152,
+      "y": 128,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 27,
+    "name": "Sunstone",
+    "file": "Icons/128px/027 Sunstone.png",
+    "atlas128": {
+      "x": 1280,
+      "y": 128,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 28,
+    "name": "Moonstone",
+    "file": "Icons/128px/028 Moonstone.png",
+    "atlas128": {
+      "x": 1408,
+      "y": 128,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 29,
+    "name": "Star diamond",
+    "file": "Icons/128px/029 Star diamond.png",
+    "atlas128": {
+      "x": 1536,
+      "y": 128,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 30,
+    "name": "Opal gem",
+    "file": "Icons/128px/030 Opal gem.png",
+    "atlas128": {
+      "x": 1664,
+      "y": 128,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 31,
+    "name": "Meteorite",
+    "file": "Icons/128px/031 Meteorite.png",
+    "atlas128": {
+      "x": 1792,
+      "y": 128,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 32,
+    "name": "Quartz cluster",
+    "file": "Icons/128px/032 Quartz cluster.png",
+    "atlas128": {
+      "x": 1920,
+      "y": 128,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 33,
+    "name": "Astrolabe",
+    "file": "Icons/128px/033 Astrolabe.png",
+    "atlas128": {
+      "x": 0,
+      "y": 256,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 34,
+    "name": "Telescope",
+    "file": "Icons/128px/034 Telescope.png",
+    "atlas128": {
+      "x": 128,
+      "y": 256,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 35,
+    "name": "Sextant",
+    "file": "Icons/128px/035 Sextant.png",
+    "atlas128": {
+      "x": 256,
+      "y": 256,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 36,
+    "name": "Orrery",
+    "file": "Icons/128px/036 Orrery.png",
+    "atlas128": {
+      "x": 384,
+      "y": 256,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 37,
+    "name": "Armillary sphere",
+    "file": "Icons/128px/037 Armillary sphere.png",
+    "atlas128": {
+      "x": 512,
+      "y": 256,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 38,
+    "name": "Star compass",
+    "file": "Icons/128px/038 Star compass.png",
+    "atlas128": {
+      "x": 640,
+      "y": 256,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 39,
+    "name": "Sundial",
+    "file": "Icons/128px/039 Sundial.png",
+    "atlas128": {
+      "x": 768,
+      "y": 256,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 40,
+    "name": "Hourglass",
+    "file": "Icons/128px/040 Hourglass.png",
+    "atlas128": {
+      "x": 896,
+      "y": 256,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 41,
+    "name": "Star chart",
+    "file": "Icons/128px/041 Star chart.png",
+    "atlas128": {
+      "x": 1024,
+      "y": 256,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 42,
+    "name": "Spellbook",
+    "file": "Icons/128px/042 Spellbook.png",
+    "atlas128": {
+      "x": 1152,
+      "y": 256,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 43,
+    "name": "Open atlas",
+    "file": "Icons/128px/043 Open atlas.png",
+    "atlas128": {
+      "x": 1280,
+      "y": 256,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 44,
+    "name": "Moon scroll",
+    "file": "Icons/128px/044 Moon scroll.png",
+    "atlas128": {
+      "x": 1408,
+      "y": 256,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 45,
+    "name": "Astral quill",
+    "file": "Icons/128px/045 Astral quill.png",
+    "atlas128": {
+      "x": 1536,
+      "y": 256,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 46,
+    "name": "Gold inkpot",
+    "file": "Icons/128px/046 Gold inkpot.png",
+    "atlas128": {
+      "x": 1664,
+      "y": 256,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 47,
+    "name": "Rune tablet",
+    "file": "Icons/128px/047 Rune tablet.png",
+    "atlas128": {
+      "x": 1792,
+      "y": 256,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 48,
+    "name": "Crystal codex",
+    "file": "Icons/128px/048 Crystal codex.png",
+    "atlas128": {
+      "x": 1920,
+      "y": 256,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 49,
+    "name": "Sun medallion",
+    "file": "Icons/128px/049 Sun medallion.png",
+    "atlas128": {
+      "x": 0,
+      "y": 384,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 50,
+    "name": "Moon pendant",
+    "file": "Icons/128px/050 Moon pendant.png",
+    "atlas128": {
+      "x": 128,
+      "y": 384,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 51,
+    "name": "Star ring",
+    "file": "Icons/128px/051 Star ring.png",
+    "atlas128": {
+      "x": 256,
+      "y": 384,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 52,
+    "name": "Orbit bracelet",
+    "file": "Icons/128px/052 Orbit bracelet.png",
+    "atlas128": {
+      "x": 384,
+      "y": 384,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 53,
+    "name": "Comet brooch",
+    "file": "Icons/128px/053 Comet brooch.png",
+    "atlas128": {
+      "x": 512,
+      "y": 384,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 54,
+    "name": "Celestial crown",
+    "file": "Icons/128px/054 Celestial crown.png",
+    "atlas128": {
+      "x": 640,
+      "y": 384,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 55,
+    "name": "Planet earrings",
+    "file": "Icons/128px/055 Planet earrings.png",
+    "atlas128": {
+      "x": 768,
+      "y": 384,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 56,
+    "name": "Zodiac seal",
+    "file": "Icons/128px/056 Zodiac seal.png",
+    "atlas128": {
+      "x": 896,
+      "y": 384,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 57,
+    "name": "Star coin",
+    "file": "Icons/128px/057 Star coin.png",
+    "atlas128": {
+      "x": 1024,
+      "y": 384,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 58,
+    "name": "Moon coin",
+    "file": "Icons/128px/058 Moon coin.png",
+    "atlas128": {
+      "x": 1152,
+      "y": 384,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 59,
+    "name": "Sun ingot",
+    "file": "Icons/128px/059 Sun ingot.png",
+    "atlas128": {
+      "x": 1280,
+      "y": 384,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 60,
+    "name": "Crystal pouch",
+    "file": "Icons/128px/060 Crystal pouch.png",
+    "atlas128": {
+      "x": 1408,
+      "y": 384,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 61,
+    "name": "Celestial chest",
+    "file": "Icons/128px/061 Celestial chest.png",
+    "atlas128": {
+      "x": 1536,
+      "y": 384,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 62,
+    "name": "Portal key",
+    "file": "Icons/128px/062 Portal key.png",
+    "atlas128": {
+      "x": 1664,
+      "y": 384,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 63,
+    "name": "Astral lock",
+    "file": "Icons/128px/063 Astral lock.png",
+    "atlas128": {
+      "x": 1792,
+      "y": 384,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 64,
+    "name": "Treasure orb",
+    "file": "Icons/128px/064 Treasure orb.png",
+    "atlas128": {
+      "x": 1920,
+      "y": 384,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 65,
+    "name": "Planet globe",
+    "file": "Icons/128px/065 Planet globe.png",
+    "atlas128": {
+      "x": 0,
+      "y": 512,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 66,
+    "name": "Ringed planet",
+    "file": "Icons/128px/066 Ringed planet.png",
+    "atlas128": {
+      "x": 128,
+      "y": 512,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 67,
+    "name": "Crescent moon",
+    "file": "Icons/128px/067 Crescent moon.png",
+    "atlas128": {
+      "x": 256,
+      "y": 512,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 68,
+    "name": "Full moon",
+    "file": "Icons/128px/068 Full moon.png",
+    "atlas128": {
+      "x": 384,
+      "y": 512,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 69,
+    "name": "Radiant sun",
+    "file": "Icons/128px/069 Radiant sun.png",
+    "atlas128": {
+      "x": 512,
+      "y": 512,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 70,
+    "name": "Comet",
+    "file": "Icons/128px/070 Comet.png",
+    "atlas128": {
+      "x": 640,
+      "y": 512,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 71,
+    "name": "Shooting star",
+    "file": "Icons/128px/071 Shooting star.png",
+    "atlas128": {
+      "x": 768,
+      "y": 512,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 72,
+    "name": "Eclipse",
+    "file": "Icons/128px/072 Eclipse.png",
+    "atlas128": {
+      "x": 896,
+      "y": 512,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 73,
+    "name": "Crystal lantern",
+    "file": "Icons/128px/073 Crystal lantern.png",
+    "atlas128": {
+      "x": 1024,
+      "y": 512,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 74,
+    "name": "Star candle",
+    "file": "Icons/128px/074 Star candle.png",
+    "atlas128": {
+      "x": 1152,
+      "y": 512,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 75,
+    "name": "Moon lamp",
+    "file": "Icons/128px/075 Moon lamp.png",
+    "atlas128": {
+      "x": 1280,
+      "y": 512,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 76,
+    "name": "Sun brazier",
+    "file": "Icons/128px/076 Sun brazier.png",
+    "atlas128": {
+      "x": 1408,
+      "y": 512,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 77,
+    "name": "Floating crystal",
+    "file": "Icons/128px/077 Floating crystal.png",
+    "atlas128": {
+      "x": 1536,
+      "y": 512,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 78,
+    "name": "Prism",
+    "file": "Icons/128px/078 Prism.png",
+    "atlas128": {
+      "x": 1664,
+      "y": 512,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 79,
+    "name": "Crystal lens",
+    "file": "Icons/128px/079 Crystal lens.png",
+    "atlas128": {
+      "x": 1792,
+      "y": 512,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 80,
+    "name": "Magic mirror",
+    "file": "Icons/128px/080 Magic mirror.png",
+    "atlas128": {
+      "x": 1920,
+      "y": 512,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 81,
+    "name": "Meteor strike",
+    "file": "Icons/128px/081 Meteor strike.png",
+    "atlas128": {
+      "x": 0,
+      "y": 640,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 82,
+    "name": "Lunar beam",
+    "file": "Icons/128px/082 Lunar beam.png",
+    "atlas128": {
+      "x": 128,
+      "y": 640,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 83,
+    "name": "Solar flare",
+    "file": "Icons/128px/083 Solar flare.png",
+    "atlas128": {
+      "x": 256,
+      "y": 640,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 84,
+    "name": "Arcane bolt",
+    "file": "Icons/128px/084 Arcane bolt.png",
+    "atlas128": {
+      "x": 384,
+      "y": 640,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 85,
+    "name": "Gravity well",
+    "file": "Icons/128px/085 Gravity well.png",
+    "atlas128": {
+      "x": 512,
+      "y": 640,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 86,
+    "name": "Astral shield",
+    "file": "Icons/128px/086 Astral shield.png",
+    "atlas128": {
+      "x": 640,
+      "y": 640,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 87,
+    "name": "Star healing",
+    "file": "Icons/128px/087 Star healing.png",
+    "atlas128": {
+      "x": 768,
+      "y": 640,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 88,
+    "name": "Time stop",
+    "file": "Icons/128px/088 Time stop.png",
+    "atlas128": {
+      "x": 896,
+      "y": 640,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 89,
+    "name": "Portal spell",
+    "file": "Icons/128px/089 Portal spell.png",
+    "atlas128": {
+      "x": 1024,
+      "y": 640,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 90,
+    "name": "Teleport glyph",
+    "file": "Icons/128px/090 Teleport glyph.png",
+    "atlas128": {
+      "x": 1152,
+      "y": 640,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 91,
+    "name": "Mana burst",
+    "file": "Icons/128px/091 Mana burst.png",
+    "atlas128": {
+      "x": 1280,
+      "y": 640,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 92,
+    "name": "Frost star",
+    "file": "Icons/128px/092 Frost star.png",
+    "atlas128": {
+      "x": 1408,
+      "y": 640,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 93,
+    "name": "Lightning star",
+    "file": "Icons/128px/093 Lightning star.png",
+    "atlas128": {
+      "x": 1536,
+      "y": 640,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 94,
+    "name": "Aurora wave",
+    "file": "Icons/128px/094 Aurora wave.png",
+    "atlas128": {
+      "x": 1664,
+      "y": 640,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 95,
+    "name": "Cosmic eye",
+    "file": "Icons/128px/095 Cosmic eye.png",
+    "atlas128": {
+      "x": 1792,
+      "y": 640,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 96,
+    "name": "Orbit spell",
+    "file": "Icons/128px/096 Orbit spell.png",
+    "atlas128": {
+      "x": 1920,
+      "y": 640,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 97,
+    "name": "Dragon constellation",
+    "file": "Icons/128px/097 Dragon constellation.png",
+    "atlas128": {
+      "x": 0,
+      "y": 768,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 98,
+    "name": "Fox constellation",
+    "file": "Icons/128px/098 Fox constellation.png",
+    "atlas128": {
+      "x": 128,
+      "y": 768,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 99,
+    "name": "Owl constellation",
+    "file": "Icons/128px/099 Owl constellation.png",
+    "atlas128": {
+      "x": 256,
+      "y": 768,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 100,
+    "name": "Lion constellation",
+    "file": "Icons/128px/100 Lion constellation.png",
+    "atlas128": {
+      "x": 384,
+      "y": 768,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 101,
+    "name": "Serpent constellation",
+    "file": "Icons/128px/101 Serpent constellation.png",
+    "atlas128": {
+      "x": 512,
+      "y": 768,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 102,
+    "name": "Whale constellation",
+    "file": "Icons/128px/102 Whale constellation.png",
+    "atlas128": {
+      "x": 640,
+      "y": 768,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 103,
+    "name": "Phoenix constellation",
+    "file": "Icons/128px/103 Phoenix constellation.png",
+    "atlas128": {
+      "x": 768,
+      "y": 768,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 104,
+    "name": "Stag constellation",
+    "file": "Icons/128px/104 Stag constellation.png",
+    "atlas128": {
+      "x": 896,
+      "y": 768,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 105,
+    "name": "Crystal flower",
+    "file": "Icons/128px/105 Crystal flower.png",
+    "atlas128": {
+      "x": 1024,
+      "y": 768,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 106,
+    "name": "Moon lily",
+    "file": "Icons/128px/106 Moon lily.png",
+    "atlas128": {
+      "x": 1152,
+      "y": 768,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 107,
+    "name": "Star orchid",
+    "file": "Icons/128px/107 Star orchid.png",
+    "atlas128": {
+      "x": 1280,
+      "y": 768,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 108,
+    "name": "Sun lotus",
+    "file": "Icons/128px/108 Sun lotus.png",
+    "atlas128": {
+      "x": 1408,
+      "y": 768,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 109,
+    "name": "Nebula mushroom",
+    "file": "Icons/128px/109 Nebula mushroom.png",
+    "atlas128": {
+      "x": 1536,
+      "y": 768,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 110,
+    "name": "Silver leaf",
+    "file": "Icons/128px/110 Silver leaf.png",
+    "atlas128": {
+      "x": 1664,
+      "y": 768,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 111,
+    "name": "Glow seed",
+    "file": "Icons/128px/111 Glow seed.png",
+    "atlas128": {
+      "x": 1792,
+      "y": 768,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 112,
+    "name": "Aether root",
+    "file": "Icons/128px/112 Aether root.png",
+    "atlas128": {
+      "x": 1920,
+      "y": 768,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 113,
+    "name": "Rune stone",
+    "file": "Icons/128px/113 Rune stone.png",
+    "atlas128": {
+      "x": 0,
+      "y": 896,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 114,
+    "name": "Magic chalk",
+    "file": "Icons/128px/114 Magic chalk.png",
+    "atlas128": {
+      "x": 128,
+      "y": 896,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 115,
+    "name": "Gold thread",
+    "file": "Icons/128px/115 Gold thread.png",
+    "atlas128": {
+      "x": 256,
+      "y": 896,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 116,
+    "name": "Glass bead",
+    "file": "Icons/128px/116 Glass bead.png",
+    "atlas128": {
+      "x": 384,
+      "y": 896,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 117,
+    "name": "Silver wire",
+    "file": "Icons/128px/117 Silver wire.png",
+    "atlas128": {
+      "x": 512,
+      "y": 896,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 118,
+    "name": "Crystal powder",
+    "file": "Icons/128px/118 Crystal powder.png",
+    "atlas128": {
+      "x": 640,
+      "y": 896,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 119,
+    "name": "Star sand",
+    "file": "Icons/128px/119 Star sand.png",
+    "atlas128": {
+      "x": 768,
+      "y": 896,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 120,
+    "name": "Copper plate",
+    "file": "Icons/128px/120 Copper plate.png",
+    "atlas128": {
+      "x": 896,
+      "y": 896,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 121,
+    "name": "Wizard tower",
+    "file": "Icons/128px/121 Wizard tower.png",
+    "atlas128": {
+      "x": 1024,
+      "y": 896,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 122,
+    "name": "Observatory dome",
+    "file": "Icons/128px/122 Observatory dome.png",
+    "atlas128": {
+      "x": 1152,
+      "y": 896,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 123,
+    "name": "Portal arch",
+    "file": "Icons/128px/123 Portal arch.png",
+    "atlas128": {
+      "x": 1280,
+      "y": 896,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 124,
+    "name": "Floating island",
+    "file": "Icons/128px/124 Floating island.png",
+    "atlas128": {
+      "x": 1408,
+      "y": 896,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 125,
+    "name": "Moon bridge",
+    "file": "Icons/128px/125 Moon bridge.png",
+    "atlas128": {
+      "x": 1536,
+      "y": 896,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 126,
+    "name": "Crystal obelisk",
+    "file": "Icons/128px/126 Crystal obelisk.png",
+    "atlas128": {
+      "x": 1664,
+      "y": 896,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 127,
+    "name": "Star shrine",
+    "file": "Icons/128px/127 Star shrine.png",
+    "atlas128": {
+      "x": 1792,
+      "y": 896,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 128,
+    "name": "Skyship",
+    "file": "Icons/128px/128 Skyship.png",
+    "atlas128": {
+      "x": 1920,
+      "y": 896,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 129,
+    "name": "Astral heart",
+    "file": "Icons/128px/129 Astral heart.png",
+    "atlas128": {
+      "x": 0,
+      "y": 1024,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 130,
+    "name": "Mana droplet",
+    "file": "Icons/128px/130 Mana droplet.png",
+    "atlas128": {
+      "x": 128,
+      "y": 1024,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 131,
+    "name": "Energy spark",
+    "file": "Icons/128px/131 Energy spark.png",
+    "atlas128": {
+      "x": 256,
+      "y": 1024,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 132,
+    "name": "Intellect eye",
+    "file": "Icons/128px/132 Intellect eye.png",
+    "atlas128": {
+      "x": 384,
+      "y": 1024,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 133,
+    "name": "Fortune star",
+    "file": "Icons/128px/133 Fortune star.png",
+    "atlas128": {
+      "x": 512,
+      "y": 1024,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 134,
+    "name": "Wisdom book",
+    "file": "Icons/128px/134 Wisdom book.png",
+    "atlas128": {
+      "x": 640,
+      "y": 1024,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 135,
+    "name": "Mastery spiral",
+    "file": "Icons/128px/135 Mastery spiral.png",
+    "atlas128": {
+      "x": 768,
+      "y": 1024,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 136,
+    "name": "Ascension wings",
+    "file": "Icons/128px/136 Ascension wings.png",
+    "atlas128": {
+      "x": 896,
+      "y": 1024,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 137,
+    "name": "Crystal chess piece",
+    "file": "Icons/128px/137 Crystal chess piece.png",
+    "atlas128": {
+      "x": 1024,
+      "y": 1024,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 138,
+    "name": "Rune dice",
+    "file": "Icons/128px/138 Rune dice.png",
+    "atlas128": {
+      "x": 1152,
+      "y": 1024,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 139,
+    "name": "Divination cards",
+    "file": "Icons/128px/139 Divination cards.png",
+    "atlas128": {
+      "x": 1280,
+      "y": 1024,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 140,
+    "name": "Oracle orb",
+    "file": "Icons/128px/140 Oracle orb.png",
+    "atlas128": {
+      "x": 1408,
+      "y": 1024,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 141,
+    "name": "Summoning bell",
+    "file": "Icons/128px/141 Summoning bell.png",
+    "atlas128": {
+      "x": 1536,
+      "y": 1024,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 142,
+    "name": "Magic harp",
+    "file": "Icons/128px/142 Magic harp.png",
+    "atlas128": {
+      "x": 1664,
+      "y": 1024,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 143,
+    "name": "Celestial flute",
+    "file": "Icons/128px/143 Celestial flute.png",
+    "atlas128": {
+      "x": 1792,
+      "y": 1024,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 144,
+    "name": "Clockwork bird",
+    "file": "Icons/128px/144 Clockwork bird.png",
+    "atlas128": {
+      "x": 1920,
+      "y": 1024,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 145,
+    "name": "Sun banner",
+    "file": "Icons/128px/145 Sun banner.png",
+    "atlas128": {
+      "x": 0,
+      "y": 1152,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 146,
+    "name": "Moon banner",
+    "file": "Icons/128px/146 Moon banner.png",
+    "atlas128": {
+      "x": 128,
+      "y": 1152,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 147,
+    "name": "Star badge",
+    "file": "Icons/128px/147 Star badge.png",
+    "atlas128": {
+      "x": 256,
+      "y": 1152,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 148,
+    "name": "Arcane diploma",
+    "file": "Icons/128px/148 Arcane diploma.png",
+    "atlas128": {
+      "x": 384,
+      "y": 1152,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 149,
+    "name": "Guild seal",
+    "file": "Icons/128px/149 Guild seal.png",
+    "atlas128": {
+      "x": 512,
+      "y": 1152,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 150,
+    "name": "Sealed invitation",
+    "file": "Icons/128px/150 Sealed invitation.png",
+    "atlas128": {
+      "x": 640,
+      "y": 1152,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 151,
+    "name": "Royal ticket",
+    "file": "Icons/128px/151 Royal ticket.png",
+    "atlas128": {
+      "x": 768,
+      "y": 1152,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 152,
+    "name": "Victory wreath",
+    "file": "Icons/128px/152 Victory wreath.png",
+    "atlas128": {
+      "x": 896,
+      "y": 1152,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 153,
+    "name": "Crystal pickaxe",
+    "file": "Icons/128px/153 Crystal pickaxe.png",
+    "atlas128": {
+      "x": 1024,
+      "y": 1152,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 154,
+    "name": "Enchanter hammer",
+    "file": "Icons/128px/154 Enchanter hammer.png",
+    "atlas128": {
+      "x": 1152,
+      "y": 1152,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 155,
+    "name": "Alchemy tongs",
+    "file": "Icons/128px/155 Alchemy tongs.png",
+    "atlas128": {
+      "x": 1280,
+      "y": 1152,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 156,
+    "name": "Magic mortar",
+    "file": "Icons/128px/156 Magic mortar.png",
+    "atlas128": {
+      "x": 1408,
+      "y": 1152,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 157,
+    "name": "Measuring scales",
+    "file": "Icons/128px/157 Measuring scales.png",
+    "atlas128": {
+      "x": 1536,
+      "y": 1152,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 158,
+    "name": "Gold chalice",
+    "file": "Icons/128px/158 Gold chalice.png",
+    "atlas128": {
+      "x": 1664,
+      "y": 1152,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 159,
+    "name": "Celestial bowl",
+    "file": "Icons/128px/159 Celestial bowl.png",
+    "atlas128": {
+      "x": 1792,
+      "y": 1152,
+      "w": 128,
+      "h": 128
+    }
+  },
+  {
+    "id": 160,
+    "name": "Runic anvil",
+    "file": "Icons/128px/160 Runic anvil.png",
+    "atlas128": {
+      "x": 1920,
+      "y": 1152,
+      "w": 128,
+      "h": 128
+    }
+  }
+]

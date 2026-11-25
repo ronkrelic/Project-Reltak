@@ -1,0 +1,4 @@
+﻿Icons: game-icons.net
+License: CC BY 3.0 - https://creativecommons.org/licenses/by/3.0/
+Source: https://game-icons.net
+TODO: list the authors of the specific icons used before shipping.
