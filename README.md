@@ -65,8 +65,6 @@ deliberately.
 
 ## The Library
 
-Curated, lean, and legally clean: nothing enters this project without a
-settled license, and raw third-party assets are never redistributed here.
 Functional fit first — native glTF for the browser, modular, shippable.
 
 Current shelf: KayKit Adventurers and environments (CC0), Quaternius
