@@ -1,0 +1,9 @@
+Thumbs.db
+desktop.ini
+.DS_Store
+*.blend
+*.fbx
+*.dae
+*.obj
+*.unitypackage
+logs/
