@@ -11,6 +11,7 @@ const CAMERA_MIN_DISTANCE=0.2, CAMERA_MAX_DISTANCE=20, CAMERA_DEFAULT_DISTANCE=6
 const CAMERA_DEFAULT_YAW=0, CAMERA_DEFAULT_PITCH=0.3;
 const CAMERA_MIN_PITCH=-0.15, CAMERA_MAX_PITCH=1.3;
 const CAMERA_HEAD_HEIGHT=1.65, CAMERA_HIDE_DISTANCE=1.2;
+const CAMERA_LOCK_DISTANCE=CAMERA_HIDE_DISTANCE, CAMERA_LOOK_SENSITIVITY=0.003;
 const CAMERA_ORBIT_SENSITIVITY=0.005, CAMERA_ZOOM_SENSITIVITY=0.0015;
 const CAMERA_FOLLOW_RESPONSE=10, CAMERA_ZOOM_RESPONSE=14;
 const INTRO_SECONDS=6;
@@ -97,8 +98,46 @@ export const ready=(async()=>{
  return true;
 })().catch(error=>{document.getElementById('hint').textContent='The clearing could not load. Escape returns to title.';console.error('World load failed',error);return false;});
 const keys=new Set();let drag=null;
+// This hint and pointer input belong only to the view layer.
+const lookHint=document.createElement('p');lookHint.id='look-hint';
+lookHint.textContent='Click to look around';lookHint.setAttribute('role','status');
+const lookStyle=document.createElement('style');
+lookStyle.textContent=`#look-hint{position:fixed;bottom:48px;left:50%;transform:translateX(-50%);margin:0;padding:8px 14px;border:1px solid var(--ui-accent);background:var(--ui-panel-mid);color:var(--ui-text);font-size:12px;text-align:center;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s}#look-hint.visible{opacity:1;visibility:visible}@media(prefers-reduced-motion:reduce){#look-hint{transition:none}}html[data-reduce-motion="true"] #look-hint{transition:none}`;
+document.head.append(lookStyle);document.body.append(lookHint);
+let lockPending=false;
+const inLookRange=()=>view.distance<=CAMERA_LOCK_DISTANCE;
+const isLocked=()=>document.pointerLockElement===canvas;
+function updateLookHint(){lookHint.classList.toggle('visible',inLookRange()&&!isLocked());}
+function releaseDrag(){
+ if(drag&&canvas.hasPointerCapture(drag.id))canvas.releasePointerCapture(drag.id);
+ drag=null;
+}
+async function requestLook(){
+ if(lockPending||!inLookRange()||document.pointerLockElement||!canvas.requestPointerLock)return;
+ lockPending=true;
+ try{
+  try{await canvas.requestPointerLock({unadjustedMovement:true});}
+  catch{
+   // Both legacy void-returning and modern Promise-returning APIs are valid.
+   if(inLookRange()&&!document.pointerLockElement)await canvas.requestPointerLock();
+  }
+ }catch{updateLookHint();}finally{lockPending=false;}
+}
+function lockChanged(){
+ releaseDrag();
+ // A request may finish after the wheel has already moved back out.
+ if(isLocked()&&(!inLookRange()||view.targetDistance>CAMERA_LOCK_DISTANCE))document.exitPointerLock();
+ updateLookHint();
+}
+document.addEventListener('pointerlockchange',lockChanged);
+document.addEventListener('pointerlockerror',()=>{releaseDrag();updateLookHint();});
+document.addEventListener('mousemove',event=>{
+ if(!isLocked())return;
+ view.yaw-=event.movementX*CAMERA_LOOK_SENSITIVITY;
+ view.pitch=THREE.MathUtils.clamp(view.pitch+event.movementY*CAMERA_LOOK_SENSITIVITY,CAMERA_MIN_PITCH,CAMERA_MAX_PITCH);
+});
 window.addEventListener('keydown',event=>{
- if(event.code==='Escape'){location.href='index.html';return;}
+ if(event.code==='Escape'){if(!document.pointerLockElement)location.href='index.html';return;}
  if(['KeyW','KeyA','KeyS','KeyD','ShiftLeft','ShiftRight'].includes(event.code)){event.preventDefault();keys.add(event.code);dismiss();}
 });
 window.addEventListener('keyup',event=>keys.delete(event.code));
@@ -106,9 +145,10 @@ window.addEventListener('blur',()=>{keys.clear();drag=null;});
 document.addEventListener('visibilitychange',()=>{keys.clear();drag=null;});
 const canvas=renderer.domElement;
 canvas.addEventListener('contextmenu',event=>event.preventDefault());
-canvas.addEventListener('pointerdown',event=>{drag={id:event.pointerId,x:event.clientX,y:event.clientY};canvas.setPointerCapture(event.pointerId);dismiss();});
+canvas.addEventListener('click',()=>{if(inLookRange())void requestLook();});
+canvas.addEventListener('pointerdown',event=>{if(isLocked())return;drag={id:event.pointerId,x:event.clientX,y:event.clientY};canvas.setPointerCapture(event.pointerId);dismiss();});
 canvas.addEventListener('pointermove',event=>{
- if(!drag||drag.id!==event.pointerId)return;
+ if(isLocked()||!drag||drag.id!==event.pointerId)return;
  view.yaw-=(event.clientX-drag.x)*CAMERA_ORBIT_SENSITIVITY;
  view.pitch=THREE.MathUtils.clamp(view.pitch+(event.clientY-drag.y)*CAMERA_ORBIT_SENSITIVITY,CAMERA_MIN_PITCH,CAMERA_MAX_PITCH);
  drag.x=event.clientX;drag.y=event.clientY;
@@ -118,6 +158,7 @@ canvas.addEventListener('wheel',event=>{
  event.preventDefault();dismiss();
  const pixels=event.deltaY*(event.deltaMode===1?16:event.deltaMode===2?innerHeight:1);
  view.targetDistance=THREE.MathUtils.clamp(view.targetDistance*Math.exp(pixels*CAMERA_ZOOM_SENSITIVITY),CAMERA_MIN_DISTANCE,CAMERA_MAX_DISTANCE);
+ if(view.targetDistance>CAMERA_LOCK_DISTANCE&&isLocked())document.exitPointerLock();
 },{passive:false});
 function movementIntent(){
  const x=Number(keys.has('KeyD'))-Number(keys.has('KeyA')),z=Number(keys.has('KeyS'))-Number(keys.has('KeyW'));
@@ -144,7 +185,8 @@ function updateView(dt){
  camera.position.copy(view.anchor).addScaledVector(offset,view.distance);
  // The same forward vector works at every arm length, including first person.
  camera.lookAt(new THREE.Vector3().copy(camera.position).sub(offset));
- if(model)model.visible=view.distance>=CAMERA_HIDE_DISTANCE;
+ if(model)model.visible=view.distance>CAMERA_HIDE_DISTANCE;
+ updateLookHint();
 }
 let last=performance.now(),frame;
 function tick(now){
