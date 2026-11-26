@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Character Creation — RELTAK</title>
+<style>
+@font-face{font-family:Cinzel;src:url('assets/fonts/Cinzel%5Bwght%5D.ttf') format('truetype-variations');font-weight:100 900;font-display:swap}
+:root{--gold:#d4af6a;--gold-bright:#f0d494;--parchment:#e8dcc0;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;padding:24px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Cinzel,Georgia,serif;color:var(--parchment);background:#0b1020 url('assets/ui/backgrounds/title-screen-backdrop.png') center/cover fixed no-repeat}
+body::before{content:'';position:fixed;inset:0;background:rgba(5,8,18,.75);backdrop-filter:blur(2px);z-index:-1}
+main{width:100%;max-width:940px;border:32px solid transparent;border-image:url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Window.png') 32 fill stretch;padding:8px 20px 22px;filter:drop-shadow(0 12px 28px #0008)}
+h1{margin:12px 0 0;text-align:center;font-size:clamp(1.5rem,4vw,2.4rem);letter-spacing:.09em;color:var(--gold-bright);text-shadow:0 2px 8px #000}
+.divider{display:block;width:min(320px,90%);height:auto;margin:8px auto 18px}fieldset{border:0;padding:0;margin:20px 0}legend,label{display:block;margin-bottom:10px;font-variant:small-caps;letter-spacing:.14em;color:var(--gold-bright);font-weight:600}
+input{width:100%;height:58px;border:20px solid transparent;border-left-width:24px;border-right-width:24px;border-image:url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Text%20field%20Normal.png') 20 24 fill stretch;background-color:transparent;color:var(--parchment);font:inherit;font-size:1rem;padding:0 4px;min-width:0}input:focus{border-image-source:url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Text%20field%20Hover.png')}input::placeholder{color:#c4b99e}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}button,a{font:inherit}button{cursor:pointer}.card{min-width:0;border:32px solid transparent;border-image:url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Card.png') 32 fill stretch;background:transparent;color:var(--parchment);padding:0;text-align:center;transition:filter .15s,box-shadow .15s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;min-height:150px}.card strong{color:var(--gold-bright);font-size:1.1rem;letter-spacing:.05em}.card span{font-family:Georgia,serif;font-size:1rem;line-height:1.4}.card img{width:64px;height:64px;object-fit:contain}.card:hover{filter:brightness(1.15)}.card[aria-pressed="true"]{outline:2px solid var(--gold-bright);outline-offset:-5px;box-shadow:0 0 18px #d4af6a88;filter:brightness(1.22)}
+.themed{display:inline-flex;align-items:center;justify-content:center;min-height:56px;border:20px solid transparent;border-left-width:24px;border-right-width:24px;border-image:url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Button%20Normal.png') 20 24 fill stretch;background:transparent;color:var(--gold-bright);text-decoration:none;text-align:center;line-height:1.2;padding:0 12px}.themed:hover{border-image-source:url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Button%20Hover.png')}.themed:active{border-image-source:url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Button%20Pressed.png')}
+.begin{width:100%;margin-top:8px;min-height:64px;letter-spacing:.2em;border-image-source:url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Wide%20button%20Normal.png')}.begin:hover{border-image-source:url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Wide%20button%20Hover.png')}.begin:active{border-image-source:url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Wide%20button%20Pressed.png')}.begin:disabled{border-image-source:url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Wide%20button%20Disabled.png');filter:grayscale(.8);color:#aaa294;cursor:not-allowed}
+:focus-visible{outline:2px solid var(--gold-bright);outline-offset:4px}.summary{text-align:center;padding:40px 0}.summary img{width:112px;height:112px;object-fit:contain}.summary h2{font-size:clamp(1.3rem,4vw,2rem);color:var(--gold-bright);line-height:1.6;overflow-wrap:anywhere}.summary p{font-family:Georgia,serif;line-height:1.5;margin-bottom:32px}footer{max-width:900px;margin:22px auto 0;text-align:center;font-size:.72rem;letter-spacing:.14em;line-height:1.8;color:#e8dcc0b3;text-shadow:0 1px 2px #000}
+@media(max-width:600px){body{padding:14px 8px}main{border-width:22px;padding:4px 0 16px}.cards{grid-template-columns:1fr;gap:12px}.card{min-height:112px;border-width:24px;padding:0 6px}.card img{width:64px;height:64px}h1{letter-spacing:.04em}footer{font-size:.65rem}}
+</style>
+</head>
+<body>
+<main>
+<a class="themed" href="index.html">Back</a>
+<header><h1>Character Creation</h1><img class="divider" src="assets/ui/themes/Astral%20Relics/UI%20components/PNG/Divider%20Crest.png" alt="" aria-hidden="true"></header>
+<div id="content">
+<form id="creation">
+<label for="name">Name</label><input id="name" name="name" type="text" maxlength="24" placeholder="Speak your name" autocomplete="off" required>
+<fieldset><legend>Race</legend><div class="cards" id="races"></div></fieldset>
+<fieldset><legend>Class</legend><div class="cards" id="classes"></div></fieldset>
+<button class="themed begin" id="begin" type="submit" disabled>BEGIN</button>
+</form>
+</div>
+</main>
+<footer>Designed and Made by Relic &amp; Ember Studios &mdash; We wake worlds!</footer>
+<script>
+const RACES = [ {id:'human', name:'Human', description:'Adaptable and ambitious, at home in every corner of the world.'}, {id:'elf', name:'Elf', description:'Long-lived keepers of the wilds, swift of foot and keen of eye.'}, {id:'orc', name:'Orc', description:'Fierce and unyielding, strength honed by hardship.'} ];
+const CLASSES = [ {id:'warrior', name:'Warrior', description:'Front line of any battle: strength, steel, and stubbornness.'}, {id:'ranger', name:'Ranger', description:'A hunter at the edges of the wild: bow, blade, and patience.'}, {id:'mage', name:'Mage', description:'A scholar of the astral currents: power spoken from a distance.'} ];
+const ICONS = {warrior:'001%20Star%20sword.png',ranger:'004%20Comet%20bow.png',mage:'006%20Moon%20staff.png'};
+const ICON_ROOT = 'assets/ui/themes/Astral%20Relics/Icons/64px/';
+const state = {race:null,characterClass:null};
+const nameInput = document.getElementById('name');
+const begin = document.getElementById('begin');
+function update(){begin.disabled = !(nameInput.value.trim() && state.race && state.characterClass);}
+function renderCards(items, containerId, key){
+ const group = document.getElementById(containerId);
+ items.forEach(item => {
+  const card = document.createElement('button');
+  card.type = 'button'; card.className = 'card'; card.setAttribute('aria-pressed','false');
+  if(key === 'characterClass'){
+   const image = document.createElement('img'); image.src = ICON_ROOT + ICONS[item.id]; image.alt = ''; card.append(image);
+  }
+  const title = document.createElement('strong'); title.textContent = item.name;
+  const description = document.createElement('span'); description.textContent = item.description;
+  card.append(title,description);
+  card.addEventListener('click',() => {
+   state[key] = item;
+   group.querySelectorAll('button').forEach(button => button.setAttribute('aria-pressed', String(button === card)));
+   update();
+  });
+  group.append(card);
+ });
+}
+renderCards(RACES,'races','race');
+renderCards(CLASSES,'classes','characterClass');
+nameInput.addEventListener('input',update);
+document.getElementById('creation').addEventListener('submit',event => {
+ event.preventDefault(); update(); if(begin.disabled) return;
+ const summary = document.createElement('section'); summary.className = 'summary';
+ const image = document.createElement('img'); image.src = ICON_ROOT + ICONS[state.characterClass.id]; image.alt = state.characterClass.name + ' emblem';
+ const heading = document.createElement('h2'); heading.tabIndex = -1;
+ heading.textContent = 'The tale of ' + nameInput.value.trim() + ' the ' + state.race.name + ' ' + state.characterClass.name + ' begins.';
+ const note = document.createElement('p'); note.textContent = '(The world beyond this screen is still being woken.)';
+ const back = document.createElement('a'); back.className = 'themed'; back.href = 'index.html'; back.textContent = 'Return to Title';
+ summary.append(image,heading,note,back); document.getElementById('content').replaceChildren(summary); heading.focus();
+});
+</script>
+</body>
+</html>
