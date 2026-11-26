@@ -90,7 +90,7 @@ export const ready=(async()=>{
  ]);
  model=fit(body.scene,CHARACTER_HEIGHT);actor.add(model);mixer=new THREE.AnimationMixer(model);
  for(const name of ['Idle_A','Walking','Running']){
-  const clip=(name==='Idle_A'?general:movement).animations.find(c=>c.name===name);
+  const clip=(name==='Idle_A'?general:movement).animations.find(c=>c.name===name||c.name===name+'_A');
   if(clip)actions[name]=mixer.clipAction(clip);else console.warn('Animation unavailable: '+name);
  }
  play('Idle_A');await loadScenery();introTimer=setTimeout(dismiss,INTRO_SECONDS*1000);
