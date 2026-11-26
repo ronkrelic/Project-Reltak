@@ -2,6 +2,12 @@ import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {loadSettings} from './settings.js';
 import {applyTheme} from './theme.js';
+import {resolveAttack} from './combat.js';
+import {CREATURES} from './data/creatures.js';
+import {initCapture,log,downloadLog} from './log.js';
+
+initCapture();
+log('SESSION','RELTAK session log active. Press L in game to save it.');
 
 // Simulation owns world-space movement. Only the input adapter knows view yaw.
 const WALK_SPEED=3, RUN_SPEED=6, TURN_RESPONSE=12, CLEARING_RADIUS=23;
@@ -15,6 +21,11 @@ const CAMERA_LOCK_DISTANCE=CAMERA_HIDE_DISTANCE, CAMERA_LOOK_SENSITIVITY=0.003;
 const CAMERA_ORBIT_SENSITIVITY=0.005, CAMERA_ZOOM_SENSITIVITY=0.0015;
 const CAMERA_FOLLOW_RESPONSE=10, CAMERA_ZOOM_RESPONSE=14;
 const INTRO_SECONDS=6;
+// Combat staging only: dice live in combat.js, numbers in data/creatures.js.
+const GOBLIN_SPAWN={x:0,z:-12};
+const PLAYER_STAGGER_SECONDS=0.35, PLAYER_DEATH_RETURN_SECONDS=2.8, GOBLIN_FADE_SECONDS=3;
+const PROJECTILE_FORWARD=new THREE.Vector3(0,0,1);
+const PROJECTILE_CONNECT_RADIUS=0.4, PROJECTILE_MISS_OFFSET=2.6, PROJECTILE_GRAVITY=9.8;
 
 const settings=loadSettings();
 applyTheme(settings.theme);
@@ -29,6 +40,8 @@ function loadCharacter(){
  }catch{return {...fallback};}
 }
 const character=loadCharacter();
+const stats=CREATURES[character.class],goblinData=CREATURES.Goblin;
+log('SESSION',character.name+' the '+character.race+' '+character.class+' enters the clearing.');
 const intro=document.getElementById('intro');
 document.getElementById('tale').textContent='The tale of '+character.name+' the '+character.race+' '+character.class+' begins.';
 const dismiss=()=>intro.classList.add('dismissed');
@@ -36,7 +49,7 @@ let introTimer;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x080f22);scene.fog=new THREE.Fog(0x080f22,22,85);
 const renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setClearColor(0x080f22);renderer.outputColorSpace=THREE.SRGBColorSpace;
-renderer.domElement.setAttribute('aria-label','Moonlit clearing. WASD move, Shift run, drag orbit, scroll zoom, Escape title.');
+renderer.domElement.setAttribute('aria-label','Moonlit clearing. WASD move, Shift run, F attack, drag orbit, scroll zoom, L save log, Escape title.');
 document.body.prepend(renderer.domElement);
 const camera=new THREE.PerspectiveCamera(55,1,0.05,160);
 function resize(){
@@ -81,20 +94,244 @@ async function loadScenery(){
   }catch(error){console.warn('Scenery unavailable: '+path,error);}
  }));
 }
+// The duel. Everything here is game logic and staging; none of it knows the camera.
+let playerHP=stats.hp,playerDead=false,playerStagger=0,attack=null,attackCooldown=0,arrowTemplate=null;
+const projectiles=[],goblinMaterials=[];let goblin=null;
+const hudStyle=document.createElement('style');
+hudStyle.textContent=`#hud,#goblin-hud{position:fixed;z-index:5;pointer-events:none;font-family:Cinzel,Georgia,serif}#hud{left:16px;bottom:16px}#goblin-hud{top:16px;left:50%;transform:translateX(-50%);text-align:center}.bar-label{font-size:11px;letter-spacing:.08em;color:var(--ui-subtitle);margin:0 0 3px;text-shadow:0 2px 4px #000;text-transform:uppercase}.bar{width:220px;height:10px;border:1px solid var(--ui-accent);background:var(--ui-panel-mid)}.bar>div{height:100%;width:100%;background:var(--ui-accent-bright);transition:width .25s}html[data-reduce-motion="true"] .bar>div{transition:none}#death-veil{position:fixed;inset:0;background:#080f22;opacity:0;transition:opacity 1.2s;pointer-events:none;z-index:9}#death-veil.fallen{opacity:1}html[data-reduce-motion="true"] #death-veil{transition:none}`;
+document.head.append(hudStyle);
+const hud=document.createElement('div');hud.id='hud';
+hud.innerHTML='<p class="bar-label">'+character.name+' - '+character.class+'</p><div class="bar"><div id="player-hp"></div></div>';
+const goblinHud=document.createElement('div');goblinHud.id='goblin-hud';goblinHud.hidden=true;
+goblinHud.innerHTML='<p class="bar-label">Goblin</p><div class="bar"><div id="goblin-hp"></div></div>';
+document.body.append(hud,goblinHud);
+const playerHpFill=document.getElementById('player-hp'),goblinHpFill=document.getElementById('goblin-hp');
+function updateBars(){
+ playerHpFill.style.width=Math.max(0,playerHP/stats.hp*100)+'%';
+ goblinHud.hidden=!(goblin&&goblin.aggro&&goblin.alive);
+ if(goblin)goblinHpFill.style.width=Math.max(0,goblin.hp/goblinData.hp*100)+'%';
+}
+updateBars();
+function logRoll(result){
+ log('COMBAT','d20 '+result.d20+' + '+result.attackBonus+' = '+result.total+' vs defense '+result.defense+' -> '+(result.nat1?'automatic miss':result.crit?'CRITICAL HIT':result.hit?'hit':'miss'));
+}
+async function equipWeapon(){
+ const weapon=stats.attack.weapon;if(!weapon)return;
+ try{
+  const gltf=await loader.loadAsync(weapon.path);
+  const slot=model.getObjectByName(weapon.slot);
+  if(!slot){log('ASSET','Hand slot missing: '+weapon.slot);return;}
+  slot.add(gltf.scene);log('ASSET','Equipped '+weapon.path.split('/').pop()+' in '+weapon.slot);
+ }catch(error){log('ASSET','Weapon unavailable: '+weapon.path);}
+}
+async function loadArrowTemplate(){
+ if(!stats.attack.projectileAsset)return;
+ try{arrowTemplate=await loader.loadAsync(stats.attack.projectileAsset);}catch(error){log('ASSET','Projectile unavailable: '+stats.attack.projectileAsset);}
+}
+function spawnGoblin(gltf){
+ const group=new THREE.Group();
+ const body=fit(gltf.scene.clone(true),goblinData.model.height);
+ group.add(body);group.position.set(GOBLIN_SPAWN.x,0,GOBLIN_SPAWN.z);scene.add(group);
+ const goblinMixer=new THREE.AnimationMixer(body),acts={};
+ for(const [key,suffix] of Object.entries(goblinData.model.clipSuffixes)){
+  const clip=gltf.animations.find(a=>a.name.split('|').pop()===suffix);
+  if(clip)acts[key]=mixer.clipAction.call(goblinMixer,clip);else console.warn('Goblin clip unavailable: '+key+' ('+suffix+')');
+ }
+ for(const key of ['attack','hit','death'])if(acts[key]){acts[key].setLoop(THREE.LoopOnce,1);acts[key].clampWhenFinished=true;}
+ goblin={group,mixer:goblinMixer,actions:acts,activeAction:null,animName:'none',hp:goblinData.hp,alive:true,aggro:false,state:'idle',attackT:0,attackHit:false,attackCooldown:0,stagger:0,deadClock:null};
+ playGoblin('idle');updateBars();
+ log('SESSION','A goblin waits at the far edge of the clearing.');
+}
+function playGoblin(name){
+ const next=goblin.actions[name]||goblin.actions.idle;
+ if(!next||next===goblin.activeAction)return;
+ goblin.activeAction?.fadeOut(ANIMATION_FADE);next.reset().fadeIn(ANIMATION_FADE).play();
+ goblin.activeAction=next;goblin.animName=next.getClip().name;
+}
+function beginAttack(){
+ if(!model||playerDead||attack||playerStagger>0||attackCooldown>0)return;
+ dismiss();
+ const a=stats.attack,first=a.clips.draw?'draw':'attack';
+ if(!actions[first]){log('COMBAT','Attack clip not loaded: '+first);return;}
+ if(goblin&&goblin.alive&&actor.position.distanceTo(goblin.group.position)<=a.range){
+  actor.rotation.y=Math.atan2(goblin.group.position.x-actor.position.x,goblin.group.position.z-actor.position.z);
+ }
+ attack={steps:a.clips.draw?[{clip:'draw',fireAt:null},{clip:'release',fireAt:a.fireAt}]:[{clip:first,fireAt:a.fireAt}],index:0,t:0,fired:false};
+ play(first);
+ log('COMBAT',character.name+' '+(a.type==='melee'?'swings':a.projectile==='arrow'?'draws the bow':'weaves a spell')+'.');
+}
+function updateAttack(dt){
+ if(!attack)return;
+ const step=attack.steps[attack.index],action=actions[step.clip];
+ if(!action){attack=null;return;}
+ attack.t+=dt;
+ const duration=action.getClip().duration;
+ if(!attack.fired&&step.fireAt!==null&&attack.t>=duration*step.fireAt){attack.fired=true;fireAttack();}
+ if(attack.t>=duration){
+  if(attack.index<attack.steps.length-1){attack.index++;attack.t=0;attack.fired=false;play(attack.steps[attack.index].clip);}
+  else{attack=null;attackCooldown=stats.attack.cooldown;}
+ }
+}
+function fireAttack(){
+ const a=stats.attack;
+ if(a.type==='melee'){
+  if(goblin&&goblin.alive){
+   goblin.aggro=true;
+   if(actor.position.distanceTo(goblin.group.position)<=a.range){
+    const result=resolveAttack(stats,goblinData);logRoll(result);
+    if(result.hit)damageGoblin(result.damage,result.crit);
+   }else log('COMBAT','The swing falls short.');
+   updateBars();
+  }else log('COMBAT','You swing at empty night.');
+ }else spawnProjectile();
+}
+function spawnProjectile(){
+ const a=stats.attack,origin=actor.position.clone();origin.y+=1.4;
+ let mesh;
+ if(a.projectile==='arrow'&&arrowTemplate)mesh=arrowTemplate.scene.clone(true);
+ else{mesh=new THREE.Mesh(new THREE.SphereGeometry(0.09,8,8),new THREE.MeshBasicMaterial({color:0x9fd8ff}));mesh.add(new THREE.PointLight(0x9fd8ff,4,5));}
+ scene.add(mesh);mesh.position.copy(origin);
+ let result=null,homing=false,target=null;
+ if(goblin&&goblin.alive){
+  goblin.aggro=true;
+  result=resolveAttack(stats,goblinData);logRoll(result);
+  const chest=goblin.group.position.clone();chest.y+=goblinData.model.height*0.6;
+  if(result.hit){homing=true;target=chest;}
+  else{
+   const side=new THREE.Vector3().crossVectors(chest.clone().sub(origin),THREE.Object3D.DEFAULT_UP).normalize();
+   target=chest.addScaledVector(side,PROJECTILE_MISS_OFFSET);target.y+=0.5;
+  }
+ }
+ const direction=target?target.clone().sub(origin).normalize():new THREE.Vector3(Math.sin(actor.rotation.y),0,Math.cos(actor.rotation.y));
+ projectiles.push({mesh,velocity:direction.multiplyScalar(a.speed),speed:a.speed,homing,target,result,gravity:a.gravity,asset:a.projectile});
+ log('COMBAT',(a.projectile==='arrow'?'An arrow':'A bolt of pale light')+(result===null?' leaps into the dark.':result.hit?' flies true.':' flies wide.'));
+ updateBars();
+}
+function updateProjectiles(dt){
+ for(let i=projectiles.length-1;i>=0;i--){
+  const p=projectiles[i];
+  if(p.homing){
+   const chest=goblin&&goblin.alive?goblin.group.position.clone().setY(goblin.group.position.y+goblinData.model.height*0.6):p.target;
+   p.velocity.lerp(chest.clone().sub(p.mesh.position).normalize().multiplyScalar(p.speed),Math.min(1,8*dt)).setLength(p.speed);
+   if(p.mesh.position.distanceTo(chest)<=PROJECTILE_CONNECT_RADIUS){
+    if(p.result&&p.result.hit)damageGoblin(p.result.damage,p.result.crit);
+    scene.remove(p.mesh);projectiles.splice(i,1);continue;
+   }
+  }else if(p.gravity)p.velocity.y-=PROJECTILE_GRAVITY*dt;
+  p.mesh.position.addScaledVector(p.velocity,dt);
+  if(p.asset==='arrow')p.mesh.quaternion.setFromUnitVectors(PROJECTILE_FORWARD,p.velocity.clone().normalize());
+  if(p.mesh.position.y<=0||p.mesh.position.length()>CLEARING_RADIUS+15){scene.remove(p.mesh);projectiles.splice(i,1);log('COMBAT','The shot is swallowed by the dark.');}
+ }
+}
+function damageGoblin(amount,crit){
+ if(!goblin||!goblin.alive)return;
+ goblin.hp-=amount;updateBars();
+ log('COMBAT','Goblin takes '+amount+(crit?', a critical blow!':'')+' -> '+Math.max(0,goblin.hp)+' of '+goblinData.hp+' hp');
+ if(goblin.hp<=0){killGoblin();return;}
+ goblin.stagger=goblinData.ai.staggerSeconds;
+ if(goblin.state==='attack')goblin.state='chase';
+ playGoblin('hit');
+}
+function killGoblin(){
+ goblin.alive=false;goblin.state='dead';goblin.deadClock=0;
+ playGoblin('death');
+ goblinMaterials.length=0;
+ goblin.group.traverse(object=>{for(const material of (Array.isArray(object.material)?object.material:object.material?[object.material]:[])){material.transparent=true;goblinMaterials.push(material);}});
+ log('COMBAT','The goblin falls.');updateBars();
+}
+function goblinStrike(){
+ if(playerDead)return;
+ if(actor.position.distanceTo(goblin.group.position)>goblinData.ai.attackReach+0.6){log('COMBAT','The goblin slashes empty air.');return;}
+ const result=resolveAttack(goblinData,stats);logRoll(result);
+ if(result.hit)damagePlayer(result.damage,result.crit);
+}
+function damagePlayer(amount,crit){
+ if(playerDead)return;
+ playerHP-=amount;updateBars();
+ log('COMBAT',character.name+' takes '+amount+(crit?', a critical blow!':'')+' -> '+Math.max(0,playerHP)+' of '+stats.hp+' hp');
+ if(playerHP<=0){playerDeath();return;}
+ playerStagger=PLAYER_STAGGER_SECONDS;play('Hit_A');
+}
+function playerDeath(){
+ playerDead=true;attack=null;
+ play('Death_A');
+ log('COMBAT',character.name+' falls. The tale ends here.');
+ const veil=document.createElement('div');veil.id='death-veil';document.body.append(veil);
+ void veil.offsetWidth;veil.classList.add('fallen');
+ setTimeout(()=>{location.href='index.html';},PLAYER_DEATH_RETURN_SECONDS*1000);
+}
+function updateGoblin(dt){
+ if(!goblin)return;
+ goblin.mixer.update(dt);
+ if(!goblin.alive){
+  if(goblin.deadClock!==null){
+   goblin.deadClock+=dt;
+   const fade=Math.max(0,1-goblin.deadClock/GOBLIN_FADE_SECONDS);
+   for(const material of goblinMaterials)material.opacity=fade;
+   if(goblin.deadClock>=GOBLIN_FADE_SECONDS){scene.remove(goblin.group);goblin.deadClock=null;log('COMBAT','The goblin fades into the night.');}
+  }
+  return;
+ }
+ if(goblin.stagger>0){goblin.stagger-=dt;return;}
+ if(goblin.attackCooldown>0)goblin.attackCooldown-=dt;
+ if(playerDead){goblin.state='idle';playGoblin('idle');return;}
+ const toPlayer=actor.position.clone().sub(goblin.group.position),distance=toPlayer.length();
+ if(!goblin.aggro){
+  if(distance<=goblinData.ai.aggroRadius){goblin.aggro=true;log('COMBAT','The goblin bristles and charges.');updateBars();}
+  else{playGoblin('idle');return;}
+ }
+ if(goblin.state==='attack'){
+  goblin.attackT+=dt;
+  const duration=goblin.actions.attack?goblin.actions.attack.getClip().duration:1;
+  if(!goblin.attackHit&&goblin.attackT>=duration*goblinData.ai.impactAt){goblin.attackHit=true;goblinStrike();}
+  if(goblin.attackT>=duration){goblin.state='chase';goblin.attackCooldown=goblinData.ai.attackCooldown;playGoblin('run');}
+  return;
+ }
+ if(distance>goblinData.ai.attackReach){
+  const step=toPlayer.normalize();
+  goblin.group.position.addScaledVector(step,goblinData.ai.runSpeed*dt);
+  if(goblin.group.position.length()>CLEARING_RADIUS)goblin.group.position.setLength(CLEARING_RADIUS);
+  goblin.group.rotation.y=Math.atan2(step.x,step.z);
+  goblin.state='chase';playGoblin('run');
+ }else if(goblin.attackCooldown<=0){
+  goblin.state='attack';goblin.attackT=0;goblin.attackHit=false;
+  goblin.group.rotation.y=Math.atan2(toPlayer.x,toPlayer.z);
+  playGoblin('attack');log('COMBAT','The goblin lunges!');
+ }else{goblin.state='chase';playGoblin('idle');}
+}
 export const ready=(async()=>{
  const path={Warrior:'Knight',Ranger:'Ranger',Mage:'Mage'}[character.class];
- const [body,general,movement]=await Promise.all([
+ const rig={Warrior:'Rig_Medium_CombatMelee',Ranger:'Rig_Medium_CombatRanged',Mage:'Rig_Medium_CombatRanged'}[character.class];
+ const [body,general,movement,combat,goblinGltf]=await Promise.all([
   loader.loadAsync('assets/characters/adventurers/'+path+'.glb'),
   loader.loadAsync('assets/characters/adventurers/Rig_Medium_General.glb'),
   // Already vendored in the shared animation library; no download or asset change.
-  loader.loadAsync('assets/animations/rig-medium/Rig_Medium_MovementBasic.glb')
+  loader.loadAsync('assets/animations/rig-medium/Rig_Medium_MovementBasic.glb'),
+  loader.loadAsync('assets/animations/rig-medium/'+rig+'.glb'),
+  loader.loadAsync(goblinData.model.path)
  ]);
  model=fit(body.scene,CHARACTER_HEIGHT);actor.add(model);mixer=new THREE.AnimationMixer(model);
  for(const name of ['Idle_A','Walking','Running']){
   const clip=(name==='Idle_A'?general:movement).animations.find(c=>c.name===name||c.name===name+'_A');
   if(clip)actions[name]=mixer.clipAction(clip);else console.warn('Animation unavailable: '+name);
  }
- play('Idle_A');await loadScenery();introTimer=setTimeout(dismiss,INTRO_SECONDS*1000);
+ for(const name of ['Hit_A','Death_A']){
+  const clip=general.animations.find(c=>c.name===name);
+  if(clip)actions[name]=mixer.clipAction(clip);else console.warn('Animation unavailable: '+name);
+ }
+ for(const [key,clipName] of Object.entries(stats.attack.clips)){
+  const clip=combat.animations.find(c=>c.name===clipName);
+  if(clip)actions[key]=mixer.clipAction(clip);else console.warn('Attack clip unavailable: '+key+' ('+clipName+')');
+ }
+ for(const key of [...Object.keys(stats.attack.clips),'Hit_A','Death_A']){
+  const action=actions[key];
+  if(action){action.setLoop(THREE.LoopOnce,1);action.clampWhenFinished=true;}
+ }
+ play('Idle_A');
+ await Promise.all([loadScenery(),equipWeapon(),loadArrowTemplate()]);
+ spawnGoblin(goblinGltf);
+ introTimer=setTimeout(dismiss,INTRO_SECONDS*1000);
+ log('SESSION','World loaded. The duel awaits.');
  return true;
 })().catch(error=>{document.getElementById('hint').textContent='The clearing could not load. Escape returns to title.';console.error('World load failed',error);return false;});
 const keys=new Set();let drag=null;
@@ -138,6 +375,8 @@ document.addEventListener('mousemove',event=>{
 });
 window.addEventListener('keydown',event=>{
  if(event.code==='Escape'){if(!document.pointerLockElement)location.href='index.html';return;}
+ if(event.code==='KeyF'){event.preventDefault();beginAttack();return;}
+ if(event.code==='KeyL'){event.preventDefault();downloadLog();return;}
  if(['KeyW','KeyA','KeyS','KeyD','ShiftLeft','ShiftRight'].includes(event.code)){event.preventDefault();keys.add(event.code);dismiss();}
 });
 window.addEventListener('keyup',event=>keys.delete(event.code));
@@ -167,13 +406,16 @@ function movementIntent(){
 }
 function simulate(direction,running,dt){
  if(!model)return;
+ if(playerDead)direction=new THREE.Vector3();
+ const animLocked=playerDead||attack||playerStagger>0;
  if(direction.lengthSq()){
   actor.position.addScaledVector(direction,(running?RUN_SPEED:WALK_SPEED)*dt);
   if(actor.position.length()>CLEARING_RADIUS)actor.position.setLength(CLEARING_RADIUS);
   const target=Math.atan2(direction.x,direction.z);
   const angle=Math.atan2(Math.sin(target-actor.rotation.y),Math.cos(target-actor.rotation.y));
-  actor.rotation.y+=angle*(1-Math.exp(-TURN_RESPONSE*dt));play(running?'Running':'Walking');
- }else play('Idle_A');
+  actor.rotation.y+=angle*(1-Math.exp(-TURN_RESPONSE*dt));
+  if(!animLocked)play(running?'Running':'Walking');
+ }else if(!animLocked)play('Idle_A');
  mixer?.update(dt);
 }
 const offset=new THREE.Vector3(),anchorTarget=new THREE.Vector3();
@@ -191,14 +433,19 @@ function updateView(dt){
 let last=performance.now(),frame;
 function tick(now){
  const dt=Math.min(MAX_FRAME_DELTA,(now-last)/1000);last=now;
+ if(attackCooldown>0)attackCooldown-=dt;
+ if(playerStagger>0)playerStagger-=dt;
+ updateAttack(dt);
  simulate(movementIntent(),keys.has('ShiftLeft')||keys.has('ShiftRight'),dt);
+ updateGoblin(dt);
+ updateProjectiles(dt);
  updateView(dt);renderer.render(scene,camera);frame=requestAnimationFrame(tick);
 }
 updateView(0);frame=requestAnimationFrame(tick);
 // Read-only diagnostics for live verification; no simulation depends on this view.
-export function snapshot(){return {character:{...character},position:actor.position.toArray(),rotation:actor.rotation.y,camera:{yaw:view.yaw,pitch:view.pitch,distance:view.distance,targetDistance:view.targetDistance},modelLoaded:!!model,modelVisible:model?.visible,animation:animationName,clips:Object.keys(actions),drawCalls:renderer.info.render.calls,pixelRatio:renderer.getPixelRatio(),theme:settings.theme};}
+export function snapshot(){return {character:{...character},hp:{player:Math.max(0,playerHP),max:stats.hp},goblin:goblin?{hp:Math.max(0,goblin.hp),max:goblinData.hp,alive:goblin.alive,aggro:goblin.aggro,state:goblin.state,animation:goblin.animName}:null,projectiles:projectiles.length,position:actor.position.toArray(),rotation:actor.rotation.y,camera:{yaw:view.yaw,pitch:view.pitch,distance:view.distance,targetDistance:view.targetDistance},modelLoaded:!!model,modelVisible:model?.visible,animation:animationName,clips:Object.keys(actions),drawCalls:renderer.info.render.calls,pixelRatio:renderer.getPixelRatio(),theme:settings.theme};}
 window.addEventListener('pagehide',()=>{
- cancelAnimationFrame(frame);clearTimeout(introTimer);mixer?.stopAllAction();
+ cancelAnimationFrame(frame);clearTimeout(introTimer);mixer?.stopAllAction();goblin?.mixer.stopAllAction();
  const geometries=new Set(),materials=new Set(),textures=new Set();
  scene.traverse(object=>{if(object.geometry)geometries.add(object.geometry);for(const material of (Array.isArray(object.material)?object.material:object.material?[object.material]:[])){materials.add(material);for(const value of Object.values(material))if(value?.isTexture)textures.add(value);}});
  geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());renderer.dispose();
