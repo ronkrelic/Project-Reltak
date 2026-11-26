@@ -1,1 +1,217 @@
-<center>Placeholder</center>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RELTAK</title>
+<style>
+  /* ---------- Font (verify this filename, see chat) ---------- */
+  @font-face {
+    font-family: 'Cinzel';
+    src: url('assets/fonts/Cinzel[wght].ttf') format('truetype-variations');
+    font-weight: 100 900;
+    font-display: swap;
+  }
+
+  :root {
+    --gold: #d4af6a;
+    --gold-bright: #f0d494;
+    --parchment: #e8dcc0;
+    --stone: rgba(10, 14, 26, 0.78);
+    --stone-border: rgba(212, 175, 106, 0.55);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+
+  body {
+    margin: 0;
+    overflow: hidden;
+    font-family: 'Cinzel', Georgia, 'Times New Roman', serif;
+    color: var(--parchment);
+    background: #0b1020 url('assets/ui/backgrounds/title-screen-backdrop.png') center / cover no-repeat;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* soft scrim so the menu stays legible over the art */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background:
+      radial-gradient(ellipse at center, rgba(8,11,20,0) 40%, rgba(8,11,20,0.45) 100%),
+      linear-gradient(rgba(8,11,20,0.15), rgba(8,11,20,0.35));
+    pointer-events: none;
+  }
+
+  .title-wrap, .menu { position: relative; z-index: 1; }
+
+  .title-wrap { text-align: center; margin-bottom: 2.2rem; }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(3rem, 11vw, 6.8rem);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: var(--gold-bright);
+    text-shadow: 0 0 24px rgba(212,175,106,0.35), 0 2px 4px rgba(0,0,0,0.8);
+  }
+
+  .subtitle {
+    margin-top: 0.4rem;
+    font-size: clamp(0.85rem, 2.2vw, 1.1rem);
+    letter-spacing: 0.22em;
+    color: rgba(232,220,192,0.85);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+  }
+
+  /* ---------- Menu panel: Astral Relics stone and gold ---------- */
+  .menu {
+    width: min(400px, 86vw);
+    padding: 1.6rem 1.8rem;
+    background: var(--stone);
+    border: 1px solid var(--stone-border);
+    box-shadow:
+      inset 0 0 0 1px rgba(8,11,20,0.9),
+      inset 0 0 0 2px rgba(212,175,106,0.25),
+      0 8px 40px rgba(0,0,0,0.6);
+  }
+
+  /* gold corner brackets */
+  .menu::before, .menu::after {
+    content: '';
+    position: absolute;
+    width: 14px; height: 14px;
+    border: 2px solid var(--gold);
+  }
+  .menu::before { top: -2px; left: -2px; border-right: none; border-bottom: none; }
+  .menu::after  { bottom: -2px; right: -2px; border-left: none; border-top: none; }
+
+  .menu button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    margin: 0.3rem 0;
+    padding: 0.72rem 0.5rem;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--parchment);
+    background: transparent;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+  }
+
+  .menu button:hover, .menu button:focus-visible {
+    color: var(--gold-bright);
+    background: rgba(212,175,106,0.10);
+    border-color: rgba(212,175,106,0.45);
+    outline: none;
+  }
+
+  /* START: the highlighted choice */
+  .menu button.primary {
+    color: var(--gold-bright);
+    border-color: rgba(212,175,106,0.55);
+    background: rgba(212,175,106,0.12);
+    text-shadow: 0 0 12px rgba(240,212,148,0.5);
+  }
+  .menu button.primary:hover, .menu button.primary:focus-visible {
+    background: rgba(212,175,106,0.2);
+  }
+
+  /* grayed-out choices */
+  .menu button.dim { opacity: 0.45; }
+  .menu button.dim:hover, .menu button.dim:focus-visible {
+    color: var(--parchment);
+    background: transparent;
+    border-color: transparent;
+  }
+
+  .lock { width: 11px; height: 11px; fill: currentColor; opacity: 0.9; }
+
+  /* ---------- Footer ---------- */
+  footer {
+    position: fixed;
+    bottom: 1rem;
+    left: 0; right: 0;
+    z-index: 1;
+    text-align: center;
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    color: rgba(232,220,192,0.7);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.9);
+  }
+
+  /* ---------- Toast ---------- */
+  #toast {
+    position: fixed;
+    top: 1.2rem;
+    left: 50%;
+    z-index: 2;
+    transform: translateX(-50%) translateY(-8px);
+    padding: 0.55rem 1.2rem;
+    font-size: 0.85rem;
+    letter-spacing: 0.14em;
+    color: var(--gold-bright);
+    background: var(--stone);
+    border: 1px solid var(--stone-border);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+  <div class="title-wrap">
+    <h1>RELTAK</h1>
+    <div class="subtitle">a working title &mdash; named for the dragon</div>
+  </div>
+
+  <nav class="menu" aria-label="Main menu">
+    <button type="button" class="primary" data-message="START clicked">Start</button>
+    <button type="button" class="dim" aria-disabled="true" data-message="CONTINUE clicked &mdash; no save found yet">Continue</button>
+    <button type="button" class="dim" aria-disabled="true" data-message="MULTIPLAYER clicked &mdash; locked (a horizon, not a promise)">
+      Multiplayer
+      <svg class="lock" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 9V7a5 5 0 0 0-10 0v2H5v13h14V9h-2zm-8-2a3 3 0 0 1 6 0v2H9V7z"/></svg>
+    </button>
+    <button type="button" data-message="SETTINGS clicked">Settings</button>
+    <button type="button" data-message="EXIT clicked">Exit</button>
+  </nav>
+
+  <footer>Designed and Made by Relic &amp; Ember Studios &mdash; We wake worlds!</footer>
+  <div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+  (function () {
+    var toast = document.getElementById('toast');
+    var timer = null;
+
+    function report(message) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(timer);
+      timer = setTimeout(function () { toast.classList.remove('show'); }, 2600);
+    }
+
+    document.querySelectorAll('.menu button').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        report(btn.getAttribute('data-message') || (btn.textContent.trim() + ' clicked'));
+      });
+    });
+  })();
+</script>
+
+</body>
+</html>
