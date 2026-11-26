@@ -76,7 +76,7 @@ const PALETTES={skin:['#f3d8b8','#e8c39e','#dab187','#c99a6d','#b58254','#9c6b42
 const MODELS={warrior:'Knight',ranger:'Ranger',mage:'Mage'};
 const colors={warrior:{},ranger:{},mage:{}};
 const identity=document.getElementById('creation'),custom=document.getElementById('customization'),viewport=document.getElementById('viewport'),status=document.getElementById('model-status');
-let renderer,scene,camera,controls,model,loadedClass,parts={},frame=0,request=0;
+let renderer,scene,camera,controls,model,loadedClass,parts={},frame=0,request=0,mixer=null,rigClips=null;const clock=new THREE.Clock();
 function classify(name){
  const n=name.toLowerCase();
  if(/eye|teeth|mouth/.test(n))return null;
@@ -90,7 +90,7 @@ function classify(name){
 function dispose(root){const geometries=new Set(),materials=new Set(),textures=new Set();root.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{materials.add(m);Object.values(m).forEach(v=>{if(v?.isTexture)textures.add(v)});});});geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());}
 function resize(){if(!renderer||custom.hidden)return;const w=viewport.clientWidth,h=viewport.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
 function stop(){cancelAnimationFrame(frame);frame=0;}
-function animate(){if(custom.hidden||document.hidden){frame=0;return;}controls.update();renderer.render(scene,camera);frame=requestAnimationFrame(animate);}
+function animate(){if(custom.hidden||document.hidden){frame=0;return;}const delta=Math.min(clock.getDelta(),.1);if(mixer)mixer.update(delta);controls.update();renderer.render(scene,camera);frame=requestAnimationFrame(animate);}
 function resume(){if(renderer&&!frame&&!custom.hidden&&!document.hidden)animate();}
 function init(){
  renderer=new THREE.WebGLRenderer({alpha:true,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setClearColor(0,0);renderer.domElement.setAttribute('aria-label','Rotating character preview');viewport.append(renderer.domElement);
@@ -115,18 +115,18 @@ async function enter(){
  identity.hidden=true;custom.hidden=false;document.querySelector('h1').textContent='Customization';document.getElementById('back').focus();
  try{
  if(!renderer)init();resize();resume();const id=state.characterClass.id;if(loadedClass===id)return;
- const ticket=++request;loadedClass=null;parts={};document.getElementById('palettes').replaceChildren();status.textContent='Loading '+state.characterClass.name+'…';if(model){scene.remove(model);dispose(model);model=null;}
- const gltf=await new GLTFLoader().loadAsync('assets/characters/adventurers/'+MODELS[id]+'.glb');
+ const ticket=++request;loadedClass=null;parts={};document.getElementById('palettes').replaceChildren();status.textContent='Loading '+state.characterClass.name+'…';if(mixer){mixer.stopAllAction();mixer=null;}if(model){scene.remove(model);dispose(model);model=null;}
+ const gltf=await new GLTFLoader().loadAsync('assets/characters/adventurers/'+MODELS[id]+'.glb'); if(rigClips===null){try{const rig=await new GLTFLoader().loadAsync('assets/characters/adventurers/Rig_Medium_General.glb');rigClips=rig.animations&&rig.animations.length?rig.animations:[];console.info('Rig clips',rigClips.map(clip=>clip.name));}catch(error){console.warn('Rig file not loaded, model stays in T-pose',error);}}
  if(ticket!==request){dispose(gltf.scene);return;}
  model=gltf.scene;const mapping=[],unknown=new Set();
  model.traverse(o=>{if(!o.isMesh)return;const clone=m=>{const c=m.clone(),part=classify(m.name);mapping.push({mesh:o.name,material:m.name,part:part||'unchanged'});if(part&&c.color){(parts[part]??=[]).push(c);if(colors[id][part])c.color.set(colors[id][part]);}else unknown.add(m.name||'(unnamed)');return c;};o.material=Array.isArray(o.material)?o.material.map(clone):clone(o.material);});
- const box=new THREE.Box3().setFromObject(model),size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());const scale=2/(size.y||1);model.scale.multiplyScalar(scale);model.position.sub(center.multiplyScalar(scale));model.position.y+=1;scene.add(model);loadedClass=id;camera.position.set(0,1.3,4.5);controls.target.set(0,1,0);controls.update();renderPalettes(id);status.textContent=state.characterClass.name+' ready. Original colors until a swatch is chosen.';console.info('Character material mapping',id,mapping,'Unclassified:',[...unknown]);
+ const box=new THREE.Box3().setFromObject(model),size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());const scale=2/(size.y||1);model.scale.multiplyScalar(scale);model.position.sub(center.multiplyScalar(scale));model.position.y+=1;scene.add(model);loadedClass=id;if(rigClips.length){mixer=new THREE.AnimationMixer(model);const idle=rigClips.find(clip=>clip.name==='Idle_A')||rigClips.find(clip=>clip.name.toLowerCase().includes('idle'))||rigClips[0];mixer.clipAction(idle).play();console.info('Playing',idle.name);}else mixer=null;camera.position.set(0,1.3,4.5);controls.target.set(0,1,0);controls.update();renderPalettes(id);status.textContent=state.characterClass.name+' ready. Original colors until a swatch is chosen.';console.info('Character material mapping',id,mapping,'Unclassified:',[...unknown]);
  }catch(error){status.textContent='Preview unavailable. Go back and try again, or begin your tale without it.';console.error('Character preview failed',error);}
 }
 identity.addEventListener('submit',event=>{event.preventDefault();update();if(!next.disabled)enter();});
 document.getElementById('back').addEventListener('click',()=>{++request;stop();custom.hidden=true;identity.hidden=false;document.querySelector('h1').textContent='Character Creation';next.focus();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();else resume();});
-window.addEventListener('pagehide',()=>{stop();++request;if(model)dispose(model);controls?.dispose();renderer?.dispose();});
+window.addEventListener('pagehide',()=>{stop();++request;if(mixer){mixer.stopAllAction();mixer=null;}if(model)dispose(model);controls?.dispose();renderer?.dispose();});
 document.getElementById('begin').addEventListener('click',() => {
  stop(); custom.hidden=true; document.querySelector('h1').textContent = 'Character Creation';
  const summary = document.createElement('section'); summary.className = 'summary';
