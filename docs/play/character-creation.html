@@ -6,20 +6,20 @@
 <title>Character Creation — RELTAK</title>
 <style>
 @font-face{font-family:Cinzel;src:url('assets/fonts/Cinzel%5Bwght%5D.ttf') format('truetype-variations');font-weight:100 900;font-display:swap}
-:root{--gold:#d4af6a;--gold-bright:#f0d494;--parchment:#e8dcc0;color-scheme:dark}
+:root{--gold:var(--ui-accent,#d4af6a);--gold-bright:var(--ui-accent-bright,#f0d494);--parchment:var(--ui-text,#e8dcc0);color-scheme:dark}
 *{box-sizing:border-box}body{margin:0;min-height:100vh;padding:12px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Cinzel,Georgia,serif;color:var(--parchment);background:#0b1020 url('assets/ui/backgrounds/title-screen-backdrop.png') center/cover fixed no-repeat}
 body::before{content:'';position:fixed;inset:0;background:rgba(5,8,18,.75);backdrop-filter:blur(2px);z-index:-1}
-main{width:100%;max-width:940px;border:32px solid transparent;border-image:url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Window.png') 32 fill stretch;padding:4px 20px 10px;filter:drop-shadow(0 12px 28px #0008)}
+main{width:100%;max-width:940px;border:32px solid transparent;border-image:var(--creation-window, url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Window.png')) 32 fill stretch;padding:4px 20px 10px;filter:drop-shadow(0 12px 28px #0008)}
 h1{margin:6px 0 0;text-align:center;font-size:clamp(1.5rem,4vw,2.4rem);letter-spacing:.09em;color:var(--gold-bright);text-shadow:0 2px 8px #000}
 .divider{display:block;width:min(320px,90%);height:auto;margin:4px auto 10px}fieldset{border:0;padding:0;margin:12px 0}legend,label{display:block;margin-bottom:6px;font-variant:small-caps;letter-spacing:.14em;color:var(--gold-bright);font-weight:600}
-input{width:100%;height:52px;border:20px solid transparent;border-left-width:24px;border-right-width:24px;border-image:url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Text%20field%20Normal.png') 20 24 fill stretch;background-color:transparent;color:var(--parchment);font:inherit;font-size:1rem;padding:0 4px;min-width:0}input:focus{border-image-source:url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Text%20field%20Hover.png')}input::placeholder{color:#c4b99e}
-.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}button,a{font:inherit}button{cursor:pointer}.card{min-width:0;border:32px solid transparent;border-image:url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Card.png') 32 fill stretch;background:transparent;color:var(--parchment);padding:0;text-align:center;transition:filter .15s,box-shadow .15s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:120px}.card strong{color:var(--gold-bright);font-size:1.1rem;letter-spacing:.05em}.card span{font-family:Georgia,serif;font-size:1rem;line-height:1.4}.card img{width:56px;height:56px;object-fit:contain}.card:hover{filter:brightness(1.15)}.card[aria-pressed="true"]{outline:2px solid var(--gold-bright);outline-offset:-5px;box-shadow:0 0 18px #d4af6a88;filter:brightness(1.22)}
-.themed{display:inline-flex;align-items:center;justify-content:center;min-height:56px;border:20px solid transparent;border-left-width:24px;border-right-width:24px;border-image:url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Button%20Normal.png') 20 24 fill stretch;background:transparent;color:var(--gold-bright);text-decoration:none;text-align:center;line-height:1.2;padding:0 12px}.themed:hover{border-image-source:url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Button%20Hover.png')}.themed:active{border-image-source:url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Button%20Pressed.png')}
-.begin{width:100%;margin-top:8px;min-height:64px;letter-spacing:.2em;border-image-source:url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Wide%20button%20Normal.png')}.begin:hover{border-image-source:url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Wide%20button%20Hover.png')}.begin:active{border-image-source:url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Wide%20button%20Pressed.png')}.begin:disabled{border-image-source:url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Wide%20button%20Disabled.png');filter:grayscale(.8);color:#aaa294;cursor:not-allowed}
+input{width:100%;height:52px;border:20px solid transparent;border-left-width:24px;border-right-width:24px;border-image:var(--creation-text-field-normal, url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Text%20field%20Normal.png')) 20 24 fill stretch;background-color:transparent;color:var(--parchment);font:inherit;font-size:1rem;padding:0 4px;min-width:0}input:focus{border-image-source:var(--creation-text-field-hover, url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Text%20field%20Hover.png'))}input::placeholder{color:#c4b99e}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}button,a{font:inherit}button{cursor:pointer}.card{min-width:0;border:32px solid transparent;border-image:var(--creation-card, url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Card.png')) 32 fill stretch;background:transparent;color:var(--parchment);padding:0;text-align:center;transition:filter .15s,box-shadow .15s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:120px}.card strong{color:var(--gold-bright);font-size:1.1rem;letter-spacing:.05em}.card span{font-family:Georgia,serif;font-size:1rem;line-height:1.4}.card img{width:56px;height:56px;object-fit:contain}.card:hover{filter:brightness(1.15)}.card[aria-pressed="true"]{outline:2px solid var(--gold-bright);outline-offset:-5px;box-shadow:0 0 18px #d4af6a88;filter:brightness(1.22)}
+.themed{display:inline-flex;align-items:center;justify-content:center;min-height:56px;border:20px solid transparent;border-left-width:24px;border-right-width:24px;border-image:var(--creation-button-normal, url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Button%20Normal.png')) 20 24 fill stretch;background:transparent;color:var(--gold-bright);text-decoration:none;text-align:center;line-height:1.2;padding:0 12px}.themed:hover{border-image-source:var(--creation-button-hover, url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Button%20Hover.png'))}.themed:active{border-image-source:var(--creation-button-pressed, url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Button%20Pressed.png'))}
+.begin{width:100%;margin-top:8px;min-height:64px;letter-spacing:.2em;border-image-source:var(--creation-wide-button-normal, url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Wide%20button%20Normal.png'))}.begin:hover{border-image-source:var(--creation-wide-button-hover, url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Wide%20button%20Hover.png'))}.begin:active{border-image-source:var(--creation-wide-button-pressed, url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Wide%20button%20Pressed.png'))}.begin:disabled{border-image-source:var(--creation-wide-button-disabled, url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Wide%20button%20Disabled.png'));filter:grayscale(.8);color:#aaa294;cursor:not-allowed}
 :focus-visible{outline:2px solid var(--gold-bright);outline-offset:4px}.summary{text-align:center;padding:40px 0}.summary img{width:112px;height:112px;object-fit:contain}.summary h2{font-size:clamp(1.3rem,4vw,2rem);color:var(--gold-bright);line-height:1.6;overflow-wrap:anywhere}.summary p{font-family:Georgia,serif;line-height:1.5;margin-bottom:32px}footer{max-width:900px;margin:10px auto 0;text-align:center;font-size:.72rem;letter-spacing:.14em;line-height:1.4;color:#e8dcc0b3;text-shadow:0 1px 2px #000}
 @media(max-width:600px){body{padding:14px 8px}main{border-width:22px;padding:4px 0 16px}.cards{grid-template-columns:1fr;gap:12px}.card{min-height:112px;border-width:24px;padding:0 6px}.card img{width:64px;height:64px}h1{letter-spacing:.04em}footer{font-size:.65rem}}
 
-[hidden]{display:none!important}.nav{display:flex;justify-content:space-between;gap:16px;margin-top:12px}.themed:disabled{border-image-source:url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Button%20Disabled.png');filter:grayscale(1);cursor:not-allowed;color:#aaa294}.custom-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(220px,1fr);gap:24px}.viewport{height:420px;min-width:0;position:relative}.viewport canvas{display:block;width:100%;height:100%;touch-action:none}.hint{font:1rem/1.5 Georgia,serif;color:var(--parchment)}.swatches{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:20px}.swatch{width:26px;height:26px;border-radius:50%;border:1px solid #e8dcc088;background:var(--swatch);padding:0}.swatch[aria-pressed=true]{outline:2px solid var(--gold-bright);outline-offset:3px;transform:scale(1.1)}@media(max-width:650px){.custom-layout{grid-template-columns:1fr}.viewport{height:340px}}
+[hidden]{display:none!important}.nav{display:flex;justify-content:space-between;gap:16px;margin-top:12px}.themed:disabled{border-image-source:var(--creation-button-disabled, url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Button%20Disabled.png'));filter:grayscale(1);cursor:not-allowed;color:#aaa294}.custom-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(220px,1fr);gap:24px}.viewport{height:420px;min-width:0;position:relative}.viewport canvas{display:block;width:100%;height:100%;touch-action:none}.hint{font:1rem/1.5 Georgia,serif;color:var(--parchment)}.swatches{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:20px}.swatch{width:26px;height:26px;border-radius:50%;border:1px solid #e8dcc088;background:var(--swatch);padding:0}.swatch[aria-pressed=true]{outline:2px solid var(--gold-bright);outline-offset:3px;transform:scale(1.1)}@media(max-width:650px){.custom-layout{grid-template-columns:1fr}.viewport{height:340px}}
 </style>
 </head>
 <body>
@@ -38,6 +38,34 @@ input{width:100%;height:52px;border:20px solid transparent;border-left-width:24p
 <footer>Designed and Made by Relic &amp; Ember Studios &mdash; We wake worlds!</footer>
 <script type="importmap">{"imports":{"three":"./libs/three/r187/build/three.module.js","three/addons/":"./libs/three/r187/examples/jsm/"}}</script>
 <script type="module">
+import {loadSettings} from './js/settings.js';
+import {applyTheme} from './js/theme.js';
+const settings=loadSettings();
+const activeTheme=applyTheme(settings.theme);
+const canAutoRotate=!settings.reduceMotion && settings.turntableSpeed>0;
+// Names audited against all four Component catalogs; fallback is per slot.
+const COMPONENT_NAMES=["Window","Text field Normal","Text field Hover","Card","Button Normal","Button Hover","Button Pressed","Wide button Normal","Wide button Hover","Wide button Pressed","Wide button Disabled","Button Disabled","Divider Crest"];
+async function applyCreationComponents(){
+ const root=document.documentElement;
+ const base='assets/ui/themes/'+encodeURIComponent(activeTheme.name)+'/UI%20components/';
+ const missing=[];
+ if(activeTheme.name==='Astral Relics'){root.dataset.missingThemeAssets='[]';return;}
+ let components=[];
+ try{const response=await fetch(base+'Component%20catalog.json');if(!response.ok)throw new Error('Catalog '+response.status);components=(await response.json()).components;}catch(error){console.warn('Theme catalog unavailable; keeping Astral Relics components',error);}
+ await Promise.all(COMPONENT_NAMES.map(async name=>{
+  const piece=components.find(component=>component.name===name);
+  if(!piece?.png){missing.push(name);return;}
+  const url=base+piece.png.split('/').map(encodeURIComponent).join('/');
+  try{
+   await new Promise((resolve,reject)=>{const image=new Image();image.onload=resolve;image.onerror=reject;image.src=url;});
+   if(name==='Divider Crest')document.querySelector('.divider').src=url;
+   else root.style.setProperty('--creation-'+name.toLowerCase().replaceAll(' ','-'),'url("'+url+'")');
+  }catch{missing.push(name);}
+ }));
+ root.dataset.missingThemeAssets=JSON.stringify(missing.sort());
+ if(missing.length)console.warn('Astral Relics component fallbacks',missing);
+}
+applyCreationComponents();
 import * as THREE from "three";
 import {OrbitControls} from "three/addons/controls/OrbitControls.js";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
@@ -93,13 +121,13 @@ function stop(){cancelAnimationFrame(frame);frame=0;}
 function animate(){if(custom.hidden||document.hidden){frame=0;return;}const delta=Math.min(clock.getDelta(),.1);if(mixer)mixer.update(delta);controls.update();renderer.render(scene,camera);frame=requestAnimationFrame(animate);}
 function resume(){if(renderer&&!frame&&!custom.hidden&&!document.hidden)animate();}
 function init(){
- renderer=new THREE.WebGLRenderer({alpha:true,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setClearColor(0,0);renderer.domElement.setAttribute('aria-label','Rotating character preview');viewport.append(renderer.domElement);
+ renderer=new THREE.WebGLRenderer({alpha:true,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,settings.quality==='performance'?1:settings.quality==='balanced'?1.5:Infinity));renderer.setClearColor(0,0);renderer.domElement.setAttribute('aria-label','Rotating character preview');viewport.append(renderer.domElement);
  scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(35,1,.01,100);camera.position.set(0,1.3,4.5);
  scene.add(new THREE.HemisphereLight(0xffe8b5,0x182b50,.9));
  const key=new THREE.DirectionalLight(0xffdfb0,1.2);key.position.set(3,5,4);scene.add(key);
  const rim=new THREE.DirectionalLight(0x8baeff,.4);rim.position.set(-3,3,-4);scene.add(rim);
- controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,1,0);controls.enableDamping=true;controls.autoRotate=true;controls.autoRotateSpeed=1.2;controls.enablePan=false;controls.enableZoom=true;controls.minDistance=3;controls.maxDistance=7;
- controls.addEventListener('start',()=>{controls.autoRotate=false;});controls.addEventListener('end',()=>{controls.autoRotate=true;});
+ controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,1,0);controls.enableDamping=true;controls.autoRotate=canAutoRotate;controls.autoRotateSpeed=1.2*settings.turntableSpeed;controls.enablePan=false;controls.enableZoom=true;controls.minDistance=3;controls.maxDistance=7;
+ controls.addEventListener('start',()=>{controls.autoRotate=false;});controls.addEventListener('end',()=>{controls.autoRotate=canAutoRotate;});
  new ResizeObserver(resize).observe(viewport);
 }
 function renderPalettes(id){
