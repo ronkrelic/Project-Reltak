@@ -305,6 +305,10 @@
 
     document.querySelectorAll('.menu-inner button').forEach(function (btn) {
       btn.addEventListener('click', function () {
+        if (btn.classList.contains('primary')) {
+          window.location.href = 'character-creation.html';
+          return;
+        }
         report(btn.getAttribute('data-message') || (btn.textContent.trim() + ' clicked'));
       });
     });
