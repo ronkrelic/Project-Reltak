@@ -156,14 +156,10 @@ document.getElementById('back').addEventListener('click',()=>{++request;stop();c
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();else resume();});
 window.addEventListener('pagehide',()=>{stop();++request;if(mixer){mixer.stopAllAction();mixer=null;}if(model)dispose(model);controls?.dispose();renderer?.dispose();});
 document.getElementById('begin').addEventListener('click',() => {
- stop(); custom.hidden=true; document.querySelector('h1').textContent = 'Character Creation';
- const summary = document.createElement('section'); summary.className = 'summary';
- const image = document.createElement('img'); image.src = ICON_ROOT + ICONS[state.characterClass.id]; image.alt = state.characterClass.name + ' emblem';
- const heading = document.createElement('h2'); heading.tabIndex = -1;
- heading.textContent = 'The tale of ' + nameInput.value.trim() + ' the ' + state.race.name + ' ' + state.characterClass.name + ' begins.';
- const note = document.createElement('p'); note.textContent = '(The world beyond this screen is still being woken.)';
- const back = document.createElement('a'); back.className = 'themed'; back.href = 'index.html'; back.textContent = 'Return to Title';
- summary.append(image,heading,note,back); document.getElementById('content').replaceChildren(summary); heading.focus();
+ const character={name:nameInput.value.trim(),race:state.race.name,class:state.characterClass.name};
+ try{localStorage.setItem('reltak.character',JSON.stringify(character));}
+ catch{status.textContent='Character could not be saved. Enable browser storage and try BEGIN again.';return;}
+ location.href='game.html';
 });
 </script>
 </body>
