@@ -1,5 +1,5 @@
 // The existing title chrome is CSS-drawn: it references NO theme image files.
-// Keep its exact original literals for Astral Relics, not Palette.json's different colors.
+// Legacy literals remain the role/opacity baseline for the other themes and creation screen.
 // All four catalogs and their 214 PNG/SVG files were checked: no missing equivalents.
 export const CHROME_DEFAULTS = Object.freeze({
   "accent": "#d4af6a",
@@ -32,6 +32,40 @@ export const CHROME_DEFAULTS = Object.freeze({
   "primary-hairline": "rgba(240,212,148,0.65)",
   "footer": "rgba(232,220,192,0.7)",
   "toast-border": "rgba(212,175,106,0.7)"
+});
+// Title-only Astral colors from Palette.json and the Window / Wide button SVG surfaces.
+// The matching PNG Window was visually checked: blue field, gold trim, cyan details.
+const ASTRAL_TITLE = Object.freeze({
+  "accent": "#dfbc70",
+  "accent-bright": "#dfbc70",
+  "text": "#eaf5ff",
+  "divider": "rgba(223,188,112,0.8)",
+  "diamond-glow": "rgba(223,188,112,0.6)",
+  "subtitle": "#a9c5df",
+  "trim-mid": "#dfbc70",
+  "trim-shadow": "#dfbc70",
+  "trim-dark": "#dfbc70",
+  "panel-glow": "rgba(223,188,112,0.09)",
+  "panel-top": "#203c60",
+  "panel-mid": "#132947",
+  "panel-bottom": "#132947",
+  "fit-glow": "rgba(223,188,112,0.25)",
+  "crest-glow": "rgba(223,188,112,0.5)",
+  "button-trim": "#dfbc70",
+  "button-trim-dark": "#dfbc70",
+  "button-top": "#203c60",
+  "button-mid": "#132947",
+  "button-bottom": "#132947",
+  "hairline": "rgba(223,188,112,0.4)",
+  "button-glow": "rgba(223,188,112,0.35)",
+  "text-glow": "rgba(223,188,112,0.45)",
+  "hover-hairline": "rgba(223,188,112,0.55)",
+  "primary-trim": "#dfbc70",
+  "primary-shadow": "#dfbc70",
+  "primary-glow": "rgba(223,188,112,0.12)",
+  "primary-hairline": "rgba(223,188,112,0.65)",
+  "footer": "rgba(234,245,255,0.7)",
+  "toast-border": "rgba(223,188,112,0.7)"
 });
 const palettes = {
   "Astral Relics": {
@@ -75,8 +109,9 @@ export const THEMES = Object.freeze(Object.fromEntries(Object.entries(palettes).
 function rgba(hex,alpha) { const n=parseInt(hex.slice(1),16);return 'rgba('+[(n>>16)&255,(n>>8)&255,n&255,alpha].join(',')+')'; }
 export function applyTheme(name, root=document.documentElement) {
   const theme=THEMES[name] || THEMES['Astral Relics'];
+  const title = root.querySelector?.('nav.menu .menu-inner');
   for (const [slot,original] of Object.entries(CHROME_DEFAULTS)) {
-    let value=original;
+    let value=title && theme.name==='Astral Relics' ? ASTRAL_TITLE[slot] : original;
     if(theme.name!=='Astral Relics') {
       const p=theme.palette;
       const role=slot.startsWith('panel-') && slot!=='panel-glow' ? (slot==='panel-top'?'panel':'background') :
@@ -86,6 +121,12 @@ export function applyTheme(name, root=document.documentElement) {
       value=original.startsWith('rgba')?rgba(p[role],original.match(/,\s*([\d.]+)\)$/)[1]):p[role];
     }
     root.style.setProperty('--ui-'+slot,value);
+  }
+  // Keep the existing title gradient for all other themes; never affect creation headings.
+  if (title) {
+    const heading=root.querySelector('h1');
+    if (heading) heading.style.backgroundImage=theme.name==='Astral Relics'
+      ? 'linear-gradient(180deg, #eaf5ff 0%, #dfbc70 35%, #dfbc70 100%)' : '';
   }
   root.dataset.theme=theme.name;
   return theme;
