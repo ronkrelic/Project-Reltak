@@ -13,9 +13,9 @@
   }
 
   :root {
-    --gold: #d4af6a;
-    --gold-bright: #f0d494;
-    --parchment: #e8dcc0;
+    --gold: var(--ui-accent, #d4af6a);
+    --gold-bright: var(--ui-accent-bright, #f0d494);
+    --parchment: var(--ui-text, #e8dcc0);
   }
 
   * { box-sizing: border-box; }
@@ -71,20 +71,20 @@
     width: min(420px, 70vw);
   }
   .title-divider::before, .title-divider::after { content: ''; height: 1px; flex: 1; }
-  .title-divider::before { background: linear-gradient(90deg, transparent, rgba(212,175,106,0.8)); }
-  .title-divider::after  { background: linear-gradient(90deg, rgba(212,175,106,0.8), transparent); }
+  .title-divider::before { background: linear-gradient(90deg, transparent, var(--ui-divider, rgba(212,175,106,0.8))); }
+  .title-divider::after  { background: linear-gradient(90deg, var(--ui-divider, rgba(212,175,106,0.8)), transparent); }
   .title-divider .diamond {
     width: 7px; height: 7px;
     background: var(--gold);
     transform: rotate(45deg);
-    box-shadow: 0 0 8px rgba(240,212,148,0.6);
+    box-shadow: 0 0 8px var(--ui-diamond-glow, rgba(240,212,148,0.6));
   }
 
   .subtitle {
     font-size: clamp(0.85rem, 2.2vw, 1.05rem);
     font-style: italic;
     letter-spacing: 0.2em;
-    color: #d9c69a;
+    color: var(--ui-subtitle, #d9c69a);
     text-shadow: 0 1px 3px rgba(0,0,0,0.9);
   }
 
@@ -92,7 +92,7 @@
   .menu {
     width: min(400px, 86vw);
     padding: 3px;
-    background: linear-gradient(180deg, #f0d494 0%, #c9a55e 35%, #8a6a35 70%, #5c451f 100%);
+    background: linear-gradient(180deg, var(--ui-accent-bright, #f0d494) 0%, var(--ui-trim-mid, #c9a55e) 35%, var(--ui-trim-shadow, #8a6a35) 70%, var(--ui-trim-dark, #5c451f) 100%);
     clip-path: polygon(0 26px, 50% 0, 100% 26px, 100% calc(100% - 18px), 94% 100%, 6% 100%, 0 calc(100% - 18px));
   }
 
@@ -100,9 +100,9 @@
     position: relative;
     background:
       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.72 0 0 0 0 0.58 0 0 0 0 0.32 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E"),
-      radial-gradient(ellipse at 50% 0, rgba(212,175,106,0.09), transparent 55%),
+      radial-gradient(ellipse at 50% 0, var(--ui-panel-glow, rgba(212,175,106,0.09)), transparent 55%),
       radial-gradient(ellipse at 50% 115%, rgba(0,0,0,0.42), transparent 60%),
-      linear-gradient(180deg, #141b32 0%, #0e1324 55%, #0a0e1c 100%);
+      linear-gradient(180deg, var(--ui-panel-top, #141b32) 0%, var(--ui-panel-mid, #0e1324) 55%, var(--ui-panel-bottom, #0a0e1c) 100%);
     clip-path: polygon(0 26px, 50% 0, 100% 26px, 100% calc(100% - 18px), 94% 100%, 6% 100%, 0 calc(100% - 18px));
     padding: 2.6rem 1.7rem 2.1rem;
   }
@@ -110,9 +110,9 @@
   .fit {
     position: absolute;
     width: 8px; height: 8px;
-    background: linear-gradient(135deg, #f0d494, #8a6a35);
+    background: linear-gradient(135deg, var(--ui-accent-bright, #f0d494), var(--ui-trim-shadow, #8a6a35));
     transform: rotate(45deg);
-    box-shadow: 0 0 0 1px rgba(8,11,20,0.65), 0 0 6px rgba(240,212,148,0.25);
+    box-shadow: 0 0 0 1px rgba(8,11,20,0.65), 0 0 6px var(--ui-fit-glow, rgba(240,212,148,0.25));
   }
   .fit.tl { top: 21px; left: 10px; }
   .fit.tr { top: 21px; right: 10px; }
@@ -124,7 +124,7 @@
     top: 3px; left: 50%;
     transform: translateX(-50%);
     width: 24px; height: 24px;
-    filter: drop-shadow(0 0 6px rgba(240,212,148,0.5));
+    filter: drop-shadow(0 0 6px var(--ui-crest-glow, rgba(240,212,148,0.5)));
   }
 
   .foot-emblem {
@@ -142,7 +142,7 @@
     margin: 0.6rem 0;
     padding: 0;
     border: none;
-    background: linear-gradient(180deg, #d9b96c, #8a6a35 55%, #6b5124);
+    background: linear-gradient(180deg, var(--ui-button-trim, #d9b96c), var(--ui-trim-shadow, #8a6a35) 55%, var(--ui-button-trim-dark, #6b5124));
     clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 14px 100%, 0 50%);
     cursor: pointer;
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
@@ -154,7 +154,7 @@
     display: flex; align-items: center; justify-content: center; gap: 0.5rem;
     margin: 2px;
     padding: 0.68rem 0.4rem;
-    background: radial-gradient(ellipse at 50% 35%, #1a2340 0%, #10162b 55%, #0a0e1e 100%);
+    background: radial-gradient(ellipse at 50% 35%, var(--ui-button-top, #1a2340) 0%, var(--ui-button-mid, #10162b) 55%, var(--ui-button-bottom, #0a0e1e) 100%);
     clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 14px 100%, 0 50%);
     font-family: inherit;
     font-size: 0.95rem;
@@ -170,33 +170,33 @@
     position: absolute;
     inset: 2px;
     z-index: -1;
-    background: rgba(212,175,106,0.4);
+    background: var(--ui-hairline, rgba(212,175,106,0.4));
     clip-path: polygon(13px 0, calc(100% - 13px) 0, 100% 50%, calc(100% - 13px) 100%, 13px 100%, 0 50%);
   }
 
   .menu-inner button:hover {
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)) drop-shadow(0 0 10px rgba(240,212,148,0.35));
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)) drop-shadow(0 0 10px var(--ui-button-glow, rgba(240,212,148,0.35)));
   }
   .menu-inner button:hover .face, .menu-inner button:focus-visible .face {
     color: var(--gold-bright);
-    text-shadow: 0 0 10px rgba(240,212,148,0.45);
+    text-shadow: 0 0 10px var(--ui-text-glow, rgba(240,212,148,0.45));
     outline: none;
   }
-  .menu-inner button:hover .face::before { background: rgba(240,212,148,0.55); }
+  .menu-inner button:hover .face::before { background: var(--ui-hover-hairline, rgba(240,212,148,0.55)); }
   .menu-inner button:focus-visible { outline: none; }
 
   .menu-inner button.primary {
-    background: linear-gradient(180deg, #f6e2a8, #d4af6a 55%, #9a7a3a);
-    filter: drop-shadow(0 0 14px rgba(240,212,148,0.35));
+    background: linear-gradient(180deg, var(--ui-primary-trim, #f6e2a8), var(--ui-accent, #d4af6a) 55%, var(--ui-primary-shadow, #9a7a3a));
+    filter: drop-shadow(0 0 14px var(--ui-button-glow, rgba(240,212,148,0.35)));
   }
   .menu-inner button.primary .face {
     color: var(--gold-bright);
     background:
-      radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 40%, rgba(240,212,148,0.12) 100%),
-      linear-gradient(180deg, #1a2340, #10162b 60%, #0a0e1e);
-    text-shadow: 0 0 12px rgba(240,212,148,0.55);
+      radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 40%, var(--ui-primary-glow, rgba(240,212,148,0.12)) 100%),
+      linear-gradient(180deg, var(--ui-button-top, #1a2340), var(--ui-button-mid, #10162b) 60%, var(--ui-button-bottom, #0a0e1e));
+    text-shadow: 0 0 12px var(--ui-hover-hairline, rgba(240,212,148,0.55));
   }
-  .menu-inner button.primary .face::before { background: rgba(240,212,148,0.65); }
+  .menu-inner button.primary .face::before { background: var(--ui-primary-hairline, rgba(240,212,148,0.65)); }
 
   .menu-inner button.dim { opacity: 0.45; filter: none; }
   .menu-inner button.dim:hover { filter: none; }
@@ -204,7 +204,7 @@
     color: var(--parchment);
     text-shadow: none;
   }
-  .menu-inner button.dim:hover .face::before { background: rgba(212,175,106,0.4); }
+  .menu-inner button.dim:hover .face::before { background: var(--ui-hairline, rgba(212,175,106,0.4)); }
 
   .lock { width: 11px; height: 11px; fill: currentColor; }
 
@@ -216,7 +216,7 @@
     text-align: center;
     font-size: 0.72rem;
     letter-spacing: 0.18em;
-    color: rgba(232,220,192,0.7);
+    color: var(--ui-footer, rgba(232,220,192,0.7));
     text-shadow: 0 1px 2px rgba(0,0,0,0.9);
   }
 
@@ -231,12 +231,27 @@
     letter-spacing: 0.14em;
     color: var(--gold-bright);
     background: rgba(10, 14, 26, 0.9);
-    border: 1px solid rgba(212,175,106,0.7);
+    border: 1px solid var(--ui-toast-border, rgba(212,175,106,0.7));
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.25s ease, transform 0.25s ease;
   }
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  #settings-dialog {position:fixed;inset:0;margin:auto;width:min(620px,94vw);max-height:90dvh;overflow:auto;padding:24px;border:3px solid var(--ui-accent);color:var(--ui-text);background:linear-gradient(var(--ui-panel-top),var(--ui-panel-bottom));font:inherit;box-shadow:0 12px 48px #000b}
+  #settings-dialog::backdrop {background:#000b}
+  #settings-dialog h2 {margin:0 0 20px;color:var(--ui-accent-bright);letter-spacing:.12em}
+  #settings-dialog fieldset {margin:0 0 18px;padding:12px;border:1px solid var(--ui-divider);min-width:0}
+  #settings-dialog legend,.setting-label {font-weight:bold;letter-spacing:.08em}
+  .setting-row {display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0;flex-wrap:wrap}
+  #theme-options {display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  #settings-dialog button,#settings-dialog select {font:inherit;color:var(--ui-text);background:var(--ui-button-mid);border:1px solid var(--ui-accent);padding:10px;cursor:pointer}
+  #settings-dialog button[aria-pressed=true] {outline:2px solid var(--ui-accent-bright);outline-offset:1px}
+  #settings-dialog :focus-visible {outline:2px solid var(--ui-accent-bright);outline-offset:3px}
+  .palette {display:flex;height:8px;margin-top:7px}.palette i {flex:1}
+  #settings-dialog small {display:block;font-family:Georgia,serif;line-height:1.5}
+  #settings-dialog input {accent-color:var(--ui-accent)}
+  @media(max-width:420px){#theme-options{grid-template-columns:1fr}#settings-dialog{padding:16px}}
 </style>
 </head>
 <body>
@@ -244,15 +259,15 @@
   <div class="title-wrap">
     <svg class="star-ornament" viewBox="0 0 150 34" aria-hidden="true">
       <g id="orn-half">
-        <path d="M63 17 L52 17" stroke="#d4af6a" stroke-width="1.2"/>
+        <path d="M63 17 L52 17" stroke="var(--ui-accent, #d4af6a)" stroke-width="1.2"/>
         <path d="M52 17 C 44 9, 32 9, 27 16 C 24 20, 27 25, 32 23 C 36 21, 33 15, 28 17"
-              fill="none" stroke="#d4af6a" stroke-width="1.2"/>
-        <rect x="16" y="15" width="4" height="4" fill="#d4af6a" transform="rotate(45 18 17)"/>
+              fill="none" stroke="var(--ui-accent, #d4af6a)" stroke-width="1.2"/>
+        <rect x="16" y="15" width="4" height="4" fill="var(--ui-accent, #d4af6a)" transform="rotate(45 18 17)"/>
       </g>
       <use href="#orn-half" transform="translate(150,0) scale(-1,1)"/>
-      <path d="M75 4 L78.5 13.5 L88 17 L78.5 20.5 L75 30 L71.5 20.5 L62 17 L71.5 13.5 Z" fill="#d4af6a"/>
+      <path d="M75 4 L78.5 13.5 L88 17 L78.5 20.5 L75 30 L71.5 20.5 L62 17 L71.5 13.5 Z" fill="var(--ui-accent, #d4af6a)"/>
       <path d="M85 11 L91 7 M65 11 L59 7 M85 23 L91 27 M65 23 L59 27"
-            stroke="#d4af6a" stroke-width="1.2"/>
+            stroke="var(--ui-accent, #d4af6a)" stroke-width="1.2"/>
     </svg>
     <h1>RELTAK</h1>
     <div class="title-divider"><span class="diamond"></span></div>
@@ -262,7 +277,7 @@
   <nav class="menu" aria-label="Main menu">
     <div class="menu-inner">
       <svg class="crest" viewBox="0 0 26 26" aria-hidden="true">
-        <path d="M13 1 L15.5 9.5 L24 13 L15.5 16.5 L13 25 L10.5 16.5 L2 13 L10.5 9.5 Z" fill="#d4af6a"/>
+        <path d="M13 1 L15.5 9.5 L24 13 L15.5 16.5 L13 25 L10.5 16.5 L2 13 L10.5 9.5 Z" fill="var(--ui-accent, #d4af6a)"/>
       </svg>
 
       <span class="fit tl" aria-hidden="true"></span>
@@ -277,11 +292,11 @@
           <svg class="lock" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 9V7a5 5 0 0 0-10 0v2H5v13h14V9h-2zm-8-2a3 3 0 0 1 6 0v2H9V7z"/></svg>
         </span>
       </button>
-      <button type="button" data-message="SETTINGS clicked"><span class="face">Settings</span></button>
+      <button type="button" id="open-settings" aria-haspopup="dialog"><span class="face">Settings</span></button>
       <button type="button" data-message="EXIT clicked"><span class="face">Exit</span></button>
 
       <svg class="foot-emblem" viewBox="0 0 16 16" aria-hidden="true">
-        <path fill="#d4af6a" fill-rule="evenodd"
+        <path fill="var(--ui-accent, #d4af6a)" fill-rule="evenodd"
               d="M8 0.5 A7.5 7.5 0 1 0 8 15.5 A7.5 7.5 0 1 0 8 0.5 Z
                  M11.5 2.5 A5.5 5.5 0 1 0 11.5 13.5 A5.5 5.5 0 1 0 11.5 2.5 Z"/>
       </svg>
@@ -309,10 +324,60 @@
           window.location.href = 'character-creation.html';
           return;
         }
+        if (btn.id === 'open-settings') return;
         report(btn.getAttribute('data-message') || (btn.textContent.trim() + ' clicked'));
       });
     });
   })();
+</script>
+
+
+<dialog id="settings-dialog" aria-labelledby="settings-title">
+  <h2 id="settings-title">Settings</h2>
+  <fieldset><legend>THEME</legend><div id="theme-options"></div></fieldset>
+  <div class="setting-row"><label class="setting-label" for="turntable-speed">TURNTABLE</label><span><input id="turntable-speed" type="range" min="0" max="3" step="0.25" aria-describedby="creation-note"> <output id="speed-value" for="turntable-speed"></output></span></div>
+  <div class="setting-row"><label class="setting-label" for="reduce-motion">REDUCE MOTION</label><input id="reduce-motion" type="checkbox" aria-describedby="creation-note"></div>
+  <div class="setting-row"><label class="setting-label" for="graphics">GRAPHICS</label><select id="graphics" aria-describedby="graphics-note creation-note"><option value="performance">Performance</option><option value="balanced">Balanced</option><option value="high">High</option></select></div>
+  <small id="graphics-note">Performance: pixel ratio cap 1. Balanced: cap 1.5. High: current rendering.</small>
+  <small id="creation-note">Turntable, Reduce Motion and Graphics are saved now; creation-screen effects arrive in the next update. Reduce Motion will stop automatic rotation.</small>
+  <div class="setting-row"><span class="setting-label">FULLSCREEN</span><button id="fullscreen-toggle" type="button" aria-pressed="false">Enter fullscreen</button></div>
+  <p id="settings-status" role="status" aria-live="polite"></p>
+  <button id="close-settings" type="button">Close settings</button>
+</dialog>
+
+<script type="module">
+import {loadSettings,saveSettings} from './js/settings.js';
+import {THEMES,applyTheme} from './js/theme.js';
+const settings=loadSettings();
+applyTheme(settings.theme);
+const dialog=document.querySelector('#settings-dialog');
+const opener=document.querySelector('#open-settings');
+const status=document.querySelector('#settings-status');
+const save=()=>{status.textContent=saveSettings(settings)?'Saved.':'Storage unavailable: changes apply only until this page closes.';};
+const options=document.querySelector('#theme-options');
+for(const theme of Object.values(THEMES)) {
+  const button=document.createElement('button');button.type='button';button.textContent=theme.name;
+  button.dataset.theme=theme.name;button.setAttribute('aria-pressed',String(settings.theme===theme.name));
+  const strip=document.createElement('span');strip.className='palette';strip.setAttribute('aria-hidden','true');
+  for(const color of Object.values(theme.palette)){const chip=document.createElement('i');chip.style.backgroundColor=color;strip.append(chip);}
+  button.append(strip);options.append(button);
+  button.addEventListener('click',()=>{settings.theme=theme.name;applyTheme(theme.name);for(const b of options.children)b.setAttribute('aria-pressed',String(b===button));save();});
+}
+opener.addEventListener('click',()=>{status.textContent='';dialog.showModal();});
+document.querySelector('#close-settings').addEventListener('click',()=>dialog.close());
+dialog.addEventListener('click',event=>{const r=dialog.getBoundingClientRect();if(event.target===dialog && (event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom))dialog.close();});
+dialog.addEventListener('close',()=>opener.focus());
+const speed=document.querySelector('#turntable-speed'),output=document.querySelector('#speed-value');
+speed.value=settings.turntableSpeed;output.value=settings.turntableSpeed+'x';
+speed.addEventListener('input',()=>{settings.turntableSpeed=Number(speed.value);output.value=settings.turntableSpeed+'x';save();});
+const motion=document.querySelector('#reduce-motion');motion.checked=settings.reduceMotion;
+motion.addEventListener('change',()=>{settings.reduceMotion=motion.checked;save();});
+const quality=document.querySelector('#graphics');quality.value=settings.quality;
+quality.addEventListener('change',()=>{settings.quality=quality.value;save();});
+const fullscreen=document.querySelector('#fullscreen-toggle');
+function syncFullscreen(){const active=!!document.fullscreenElement;fullscreen.setAttribute('aria-pressed',String(active));fullscreen.textContent=active?'Exit fullscreen':'Enter fullscreen';fullscreen.disabled=!document.fullscreenEnabled&&!active;}
+fullscreen.addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch{status.textContent='Fullscreen is unavailable or was denied by the browser.';}syncFullscreen();});
+document.addEventListener('fullscreenchange',syncFullscreen);syncFullscreen();
 </script>
 
 </body>
