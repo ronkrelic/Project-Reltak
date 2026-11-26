@@ -128,7 +128,7 @@ document.getElementById('back').addEventListener('click',()=>{++request;stop();c
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();else resume();});
 window.addEventListener('pagehide',()=>{stop();++request;if(model)dispose(model);controls?.dispose();renderer?.dispose();});
 document.getElementById('begin').addEventListener('click',() => {
- stop(); document.querySelector('h1').textContent = 'Character Creation';
+ stop(); custom.hidden=true; document.querySelector('h1').textContent = 'Character Creation';
  const summary = document.createElement('section'); summary.className = 'summary';
  const image = document.createElement('img'); image.src = ICON_ROOT + ICONS[state.characterClass.id]; image.alt = state.characterClass.name + ' emblem';
  const heading = document.createElement('h2'); heading.tabIndex = -1;
