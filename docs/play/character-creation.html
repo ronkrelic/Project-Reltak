@@ -18,31 +18,37 @@ input{width:100%;height:58px;border:20px solid transparent;border-left-width:24p
 .begin{width:100%;margin-top:8px;min-height:64px;letter-spacing:.2em;border-image-source:url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Wide%20button%20Normal.png')}.begin:hover{border-image-source:url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Wide%20button%20Hover.png')}.begin:active{border-image-source:url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Wide%20button%20Pressed.png')}.begin:disabled{border-image-source:url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Wide%20button%20Disabled.png');filter:grayscale(.8);color:#aaa294;cursor:not-allowed}
 :focus-visible{outline:2px solid var(--gold-bright);outline-offset:4px}.summary{text-align:center;padding:40px 0}.summary img{width:112px;height:112px;object-fit:contain}.summary h2{font-size:clamp(1.3rem,4vw,2rem);color:var(--gold-bright);line-height:1.6;overflow-wrap:anywhere}.summary p{font-family:Georgia,serif;line-height:1.5;margin-bottom:32px}footer{max-width:900px;margin:22px auto 0;text-align:center;font-size:.72rem;letter-spacing:.14em;line-height:1.8;color:#e8dcc0b3;text-shadow:0 1px 2px #000}
 @media(max-width:600px){body{padding:14px 8px}main{border-width:22px;padding:4px 0 16px}.cards{grid-template-columns:1fr;gap:12px}.card{min-height:112px;border-width:24px;padding:0 6px}.card img{width:64px;height:64px}h1{letter-spacing:.04em}footer{font-size:.65rem}}
+
+[hidden]{display:none!important}.nav{display:flex;justify-content:space-between;gap:16px;margin-top:24px}.themed:disabled{border-image-source:url('assets/ui/themes/Astral%20Relics/UI%20components/PNG/Button%20Disabled.png');filter:grayscale(1);cursor:not-allowed;color:#aaa294}.custom-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(220px,1fr);gap:24px}.viewport{height:420px;min-width:0;position:relative}.viewport canvas{display:block;width:100%;height:100%;touch-action:none}.hint{font:1rem/1.5 Georgia,serif;color:var(--parchment)}.swatches{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:20px}.swatch{width:26px;height:26px;border-radius:50%;border:1px solid #e8dcc088;background:var(--swatch);padding:0}.swatch[aria-pressed=true]{outline:2px solid var(--gold-bright);outline-offset:3px;transform:scale(1.1)}@media(max-width:650px){.custom-layout{grid-template-columns:1fr}.viewport{height:340px}}
 </style>
 </head>
 <body>
 <main>
-<a class="themed" href="index.html">Back</a>
+
 <header><h1>Character Creation</h1><img class="divider" src="assets/ui/themes/Astral%20Relics/UI%20components/PNG/Divider%20Crest.png" alt="" aria-hidden="true"></header>
 <div id="content">
 <form id="creation">
 <label for="name">Name</label><input id="name" name="name" type="text" maxlength="24" placeholder="Speak your name" autocomplete="off" required>
 <fieldset><legend>Race</legend><div class="cards" id="races"></div></fieldset>
 <fieldset><legend>Class</legend><div class="cards" id="classes"></div></fieldset>
-<button class="themed begin" id="begin" type="submit" disabled>BEGIN</button>
-</form>
+<nav class="nav" aria-label="Identity navigation"><a class="themed" href="index.html">BACK</a><button class="themed" id="next" type="submit" disabled>NEXT</button></nav>
+</form><section id="customization" hidden aria-label="Customization"><div class="custom-layout"><div><div class="viewport" id="viewport" aria-label="Character model turntable"></div><p class="hint">Drag to rotate · Scroll or pinch to zoom</p><p id="model-status" class="hint" role="status"></p></div><div id="palettes"></div></div><nav class="nav" aria-label="Customization navigation"><button class="themed" id="back" type="button">BACK</button><button class="themed" id="begin" type="button">BEGIN</button></nav></section>
 </div>
 </main>
 <footer>Designed and Made by Relic &amp; Ember Studios &mdash; We wake worlds!</footer>
-<script>
+<script type="importmap">{"imports":{"three":"./libs/three/r187/build/three.module.js","three/addons/":"./libs/three/r187/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from "three";
+import {OrbitControls} from "three/addons/controls/OrbitControls.js";
+import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
 const RACES = [ {id:'human', name:'Human', description:'Adaptable and ambitious, at home in every corner of the world.'}, {id:'elf', name:'Elf', description:'Long-lived keepers of the wilds, swift of foot and keen of eye.'}, {id:'orc', name:'Orc', description:'Fierce and unyielding, strength honed by hardship.'} ];
 const CLASSES = [ {id:'warrior', name:'Warrior', description:'Front line of any battle: strength, steel, and stubbornness.'}, {id:'ranger', name:'Ranger', description:'A hunter at the edges of the wild: bow, blade, and patience.'}, {id:'mage', name:'Mage', description:'A scholar of the astral currents: power spoken from a distance.'} ];
 const ICONS = {warrior:'001%20Star%20sword.png',ranger:'004%20Comet%20bow.png',mage:'006%20Moon%20staff.png'};
 const ICON_ROOT = 'assets/ui/themes/Astral%20Relics/Icons/64px/';
 const state = {race:null,characterClass:null};
 const nameInput = document.getElementById('name');
-const begin = document.getElementById('begin');
-function update(){begin.disabled = !(nameInput.value.trim() && state.race && state.characterClass);}
+const next = document.getElementById('next');
+function update(){next.disabled = !(nameInput.value.trim() && state.race && state.characterClass);}
 function renderCards(items, containerId, key){
  const group = document.getElementById(containerId);
  items.forEach(item => {
@@ -65,8 +71,64 @@ function renderCards(items, containerId, key){
 renderCards(RACES,'races','race');
 renderCards(CLASSES,'classes','characterClass');
 nameInput.addEventListener('input',update);
-document.getElementById('creation').addEventListener('submit',event => {
- event.preventDefault(); update(); if(begin.disabled) return;
+
+const PALETTES={skin:['#f3d8b8','#e8c39e','#dab187','#c99a6d','#b58254','#9c6b42','#81532f','#64401f','#cdb9a2','#a8b98c','#8fae6f','#5f7d44'],hair:['#221c16','#3a2a1c','#5a3d24','#7a4a26','#a35c2c','#c99a4e','#e0c98c','#ede4cf','#9aa3ad','#6e6a63'],primary:['#2b3a55','#4a3a5c','#3e5c3a','#2e5c5c','#7a2e2e','#5c3a24','#8a6d2f','#d8cdb4','#33363b','#6e2a4a','#26506e','#4c3a28'],secondary:['#d4af6a','#f0d494','#b5723a','#a9743c','#c0c4cc','#6e2a2a','#2e7a4f','#6e4a8e','#3a2e24','#d8b34a','#8c8f98','#553a5c'],metal:['#8a8f98','#b0b7c0','#5a5f66','#a9743c','#d4af6a','#2a2c30','#746046','#c9cdd4']};
+const MODELS={warrior:'Knight',ranger:'Ranger',mage:'Mage'};
+const colors={warrior:{},ranger:{},mage:{}};
+const identity=document.getElementById('creation'),custom=document.getElementById('customization'),viewport=document.getElementById('viewport'),status=document.getElementById('model-status');
+let renderer,scene,camera,controls,model,loadedClass,parts={},frame=0,request=0;
+function classify(name){
+ const n=name.toLowerCase();
+ if(/eye|teeth|mouth/.test(n))return null;
+ if(/skin|body|face/.test(n))return 'skin';
+ if(/hair/.test(n))return 'hair';
+ if(/cloth|shirt|pant|tunic|robe|fabric/.test(n))return 'primary';
+ if(/armor|plate|chest|belt|leather|strap/.test(n))return 'secondary';
+ if(/metal|steel|iron/.test(n))return 'metal';
+ return null;
+}
+function dispose(root){const geometries=new Set(),materials=new Set(),textures=new Set();root.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{materials.add(m);Object.values(m).forEach(v=>{if(v?.isTexture)textures.add(v)});});});geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());}
+function resize(){if(!renderer||custom.hidden)return;const w=viewport.clientWidth,h=viewport.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+function stop(){cancelAnimationFrame(frame);frame=0;}
+function animate(){if(custom.hidden||document.hidden){frame=0;return;}controls.update();renderer.render(scene,camera);frame=requestAnimationFrame(animate);}
+function resume(){if(renderer&&!frame&&!custom.hidden&&!document.hidden)animate();}
+function init(){
+ renderer=new THREE.WebGLRenderer({alpha:true,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setClearColor(0,0);renderer.domElement.setAttribute('aria-label','Rotating character preview');viewport.append(renderer.domElement);
+ scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(35,1,.01,100);camera.position.set(0,1.3,4.5);
+ scene.add(new THREE.HemisphereLight(0xffe8b5,0x182b50,.9));
+ const key=new THREE.DirectionalLight(0xffdfb0,1.2);key.position.set(3,5,4);scene.add(key);
+ const rim=new THREE.DirectionalLight(0x8baeff,.4);rim.position.set(-3,3,-4);scene.add(rim);
+ controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,1,0);controls.enableDamping=true;controls.autoRotate=true;controls.autoRotateSpeed=1.2;controls.enablePan=false;controls.enableZoom=true;controls.minDistance=3;controls.maxDistance=7;
+ controls.addEventListener('start',()=>{controls.autoRotate=false;});controls.addEventListener('end',()=>{controls.autoRotate=true;});
+ new ResizeObserver(resize).observe(viewport);
+}
+function renderPalettes(id){
+ const target=document.getElementById('palettes');target.replaceChildren();
+ for(const part of Object.keys(PALETTES)){
+ if(!parts[part]?.length)continue;
+ const section=document.createElement('section'),label=document.createElement('h2'),row=document.createElement('div');label.textContent=part[0].toUpperCase()+part.slice(1);label.style.cssText='font-size:1rem;font-variant:small-caps;letter-spacing:.14em;color:var(--gold-bright)';row.className='swatches';
+ PALETTES[part].forEach(hex=>{const b=document.createElement('button');b.type='button';b.className='swatch';b.style.setProperty('--swatch',hex);b.setAttribute('aria-label',part+' '+hex);b.setAttribute('aria-pressed',String(colors[id][part]===hex));b.addEventListener('click',()=>{colors[id][part]=hex;parts[part].forEach(m=>m.color.set(hex));row.querySelectorAll('button').forEach(s=>s.setAttribute('aria-pressed',String(s===b)));});row.append(b);});section.append(label,row);target.append(section);
+ }
+ if(!Object.keys(parts).length){const note=document.createElement('p');note.className='hint';note.textContent='This model uses a shared texture atlas, with no safely named color parts. Original colors are preserved to protect details such as eyes.';target.append(note);}
+}
+async function enter(){
+ identity.hidden=true;custom.hidden=false;document.querySelector('h1').textContent='Customization';document.getElementById('back').focus();
+ try{
+ if(!renderer)init();resize();resume();const id=state.characterClass.id;if(loadedClass===id)return;
+ const ticket=++request;loadedClass=null;parts={};document.getElementById('palettes').replaceChildren();status.textContent='Loading '+state.characterClass.name+'…';if(model){scene.remove(model);dispose(model);model=null;}
+ const gltf=await new GLTFLoader().loadAsync('assets/characters/adventurers/'+MODELS[id]+'.glb');
+ if(ticket!==request){dispose(gltf.scene);return;}
+ model=gltf.scene;const mapping=[],unknown=new Set();
+ model.traverse(o=>{if(!o.isMesh)return;const clone=m=>{const c=m.clone(),part=classify(m.name);mapping.push({mesh:o.name,material:m.name,part:part||'unchanged'});if(part&&c.color){(parts[part]??=[]).push(c);if(colors[id][part])c.color.set(colors[id][part]);}else unknown.add(m.name||'(unnamed)');return c;};o.material=Array.isArray(o.material)?o.material.map(clone):clone(o.material);});
+ const box=new THREE.Box3().setFromObject(model),size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());const scale=2/(size.y||1);model.scale.multiplyScalar(scale);model.position.sub(center.multiplyScalar(scale));model.position.y+=1;scene.add(model);loadedClass=id;camera.position.set(0,1.3,4.5);controls.target.set(0,1,0);controls.update();renderPalettes(id);status.textContent=state.characterClass.name+' ready. Original colors until a swatch is chosen.';console.info('Character material mapping',id,mapping,'Unclassified:',[...unknown]);
+ }catch(error){status.textContent='Preview unavailable. Go back and try again, or begin your tale without it.';console.error('Character preview failed',error);}
+}
+identity.addEventListener('submit',event=>{event.preventDefault();update();if(!next.disabled)enter();});
+document.getElementById('back').addEventListener('click',()=>{++request;stop();custom.hidden=true;identity.hidden=false;document.querySelector('h1').textContent='Character Creation';next.focus();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();else resume();});
+window.addEventListener('pagehide',()=>{stop();++request;if(model)dispose(model);controls?.dispose();renderer?.dispose();});
+document.getElementById('begin').addEventListener('click',() => {
+ stop(); document.querySelector('h1').textContent = 'Character Creation';
  const summary = document.createElement('section'); summary.className = 'summary';
  const image = document.createElement('img'); image.src = ICON_ROOT + ICONS[state.characterClass.id]; image.alt = state.characterClass.name + ' emblem';
  const heading = document.createElement('h2'); heading.tabIndex = -1;
