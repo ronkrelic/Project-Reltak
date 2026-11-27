@@ -244,7 +244,7 @@ function squareMove(direction,speed,dt){
  const nz=z+direction.z*speed*dt;if(valid(x,nz))z=nz;
  p.set(80+x,0,z);
  if(z<-11.8&&Math.abs(x)<1.25){inSquare=false;inInn=true;p.set(40,0,6.8);view.anchor.copy(p).y+=CAMERA_HEAD_HEIGHT;log('SESSION','Inside the inn.');}
- else if(z>19.5){inSquare=false;p.set(0,0,12);view.anchor.copy(p).y+=CAMERA_HEAD_HEIGHT;log('SESSION','The road opens into the clearing.');}
+ else if(z>19.5){inSquare=false;p.set(0,0,-21);view.anchor.copy(p).y+=CAMERA_HEAD_HEIGHT;log('SESSION','The road opens into the clearing.');}
 }
 function squareAtmosphere(){
  squareRoot.visible=inSquare;morning.visible=inSquare;moon.visible=!inSquare;moonlight.visible=!inSquare;innRoot.visible=inInn;
@@ -297,6 +297,8 @@ async function loadScenery(){
   }catch(error){console.warn('Scenery unavailable: '+path,error);}
  }));
 }
+// The same road direction carries the player through both ends of the transition.
+innBox(0,.015,-21.6,3,.03,2.8,0x655c65,scene);
 // The duel. Everything here is game logic and staging; none of it knows the camera.
 let playerHP=stats.hp,playerDead=false,playerStagger=0,attack=null,attackCooldown=0,arrowTemplate=null;
 const projectiles=[],goblinMaterials=[];let goblin=null;
@@ -676,7 +678,7 @@ function simulate(direction,running,dt){
   if(inInn)innMove(direction,running?RUN_SPEED:WALK_SPEED,dt);
   else if(inSquare)squareMove(direction,running?RUN_SPEED:WALK_SPEED,dt);
   else {actor.position.addScaledVector(direction,(running?RUN_SPEED:WALK_SPEED)*dt);if(actor.position.length()>CLEARING_RADIUS)actor.position.setLength(CLEARING_RADIUS);
-   if(actor.position.z>13&&Math.abs(actor.position.x)<1.3){squareEnter(18.3);}}
+   if(actor.position.z< -22&&Math.abs(actor.position.x)<1.3){squareEnter(18.3);}}
   const target=Math.atan2(direction.x,direction.z);
   const angle=Math.atan2(Math.sin(target-actor.rotation.y),Math.cos(target-actor.rotation.y));
   actor.rotation.y+=angle*(1-Math.exp(-TURN_RESPONSE*dt));
