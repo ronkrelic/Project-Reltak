@@ -125,7 +125,7 @@ function useAbility(key){
  log('COMBAT',character.name+' '+a.flavor);refreshAbilities();
 }
 function playerRoll(){
- const a=attack?.ability,result=resolveAttack(a?.damage?{...stats,damage:a.damage}:stats,goblinData,{advantage:quarry});
+ const a=attack?.ability,result=resolveAttack(a?.damage?{...stats,damage:a.damage}:stats,goblinData,{advantage:attack?.advantage||false});
  quarry=false;return result;
 }
 function logRoll(result){
@@ -174,7 +174,7 @@ function beginAttack(ability=kit[0]){
   actor.rotation.y=Math.atan2(goblin.group.position.x-actor.position.x,goblin.group.position.z-actor.position.z);
  }
  if(ability.cost==='camp')spentCamp.add(ability.key);
- if(ability.cost==='focus')focus--;
+ if(ability.cost==='focus'){focus--;if(focus===0)guard=null;}
  if(ability.flavor)log('COMBAT',character.name+' '+ability.flavor);
  attack={ability,steps:a.clips.draw?[{clip:'draw',fireAt:null},{clip:'release',fireAt:a.fireAt}]:[{clip:first,fireAt:a.fireAt}],index:0,t:0,fired:false};
  play(first);
@@ -193,6 +193,7 @@ function updateAttack(dt){
  }
 }
 function fireAttack(){
+ attack.advantage=quarry;quarry=false;
  const a=stats.attack;
  if(a.type==='melee'){
   if(goblin&&goblin.alive){
