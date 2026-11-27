@@ -235,7 +235,7 @@ function updateProjectiles(dt){
   if(p.homing){
    const chest=goblin&&goblin.alive?goblin.group.position.clone().setY(goblin.group.position.y+goblinData.model.height*0.6):p.target;
    p.velocity.lerp(chest.clone().sub(p.mesh.position).normalize().multiplyScalar(p.speed),Math.min(1,8*dt)).setLength(p.speed);
-   if(p.mesh.position.distanceTo(chest)<=PROJECTILE_CONNECT_RADIUS){
+   if(p.mesh.position.distanceTo(chest)<=Math.max(PROJECTILE_CONNECT_RADIUS,p.speed*dt)){
     if(p.result&&p.result.hit){
      damageGoblin(p.result.damage,p.result.crit);
      if(p.root&&goblin?.alive){rootSeconds=p.root;log('COMBAT','Roots bind the goblin.');}
