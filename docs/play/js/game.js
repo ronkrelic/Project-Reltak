@@ -52,7 +52,7 @@ let introTimer;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x080f22);scene.fog=new THREE.Fog(0x080f22,22,85);
 const renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setClearColor(0x080f22);renderer.outputColorSpace=THREE.SRGBColorSpace;
-renderer.domElement.setAttribute('aria-label','The inn and clearing. WASD move, Shift run, click attack, drag orbit, scroll zoom, L save log, Escape title.');
+renderer.domElement.setAttribute('aria-label','The inn, square and clearing. WASD move, Shift run, click attack, drag orbit, scroll zoom, L save log, Escape title.');
 document.body.prepend(renderer.domElement);
 const camera=new THREE.PerspectiveCamera(55,1,0.05,160);
 function resize(){
@@ -140,7 +140,112 @@ for(let i=0;i<5;i++){const f=new THREE.Mesh(new THREE.ConeGeometry(.14,.5+i%2*.2
 const innFire=innLamp(-4.9,.9,2.2,0xff8a43,28);
 innBox(0,.012,2.2,1.8,.025,4,0x622e3a);
 innBox(0,-.04,7.1,3,.15,2.2,0x655c65);
-const doorstep=innBox(0,.025,13.5,2.8,.05,1.5,0x655c65,scene);
+// Exterior slice: neutral architecture, world-space collision, no camera assumptions.
+const squareRoot=new THREE.Group(),squareSolids=[],squareRoofs=[];
+squareRoot.position.x=80;scene.add(squareRoot);let inSquare=false;
+const squareMaterials=new Map();
+function squareBox(x,y,z,w,h,d,color,solid=false){
+ if(!squareMaterials.has(color))squareMaterials.set(color,new THREE.MeshStandardMaterial({color,roughness:.95}));
+ const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),squareMaterials.get(color));
+ mesh.position.set(x,y,z);mesh.castShadow=true;mesh.receiveShadow=true;squareRoot.add(mesh);
+ if(solid)squareSolids.push({x,z,w,d});return mesh;
+}
+// Staggered cobbles, continuous low walk surface, and a narrow road through the southern gap.
+squareBox(0,-.12,0,32,.2,38,0x4e5358);
+for(let row=0;row<34;row++)for(let col=0;col<27;col++){
+ const x=-13+col*.98+(row%2)*.47,z=-12+row*.85;
+ if(z>13&&Math.abs(x)>2.6)continue;
+ squareBox(x,-.008,z,.89,.025,.75,[0x64616a,0x706b70,0x595a64][(row*7+col*3+col%2)%3]);
+}
+for(const x of [-3,3])squareBox(x,.06,16,.22,.22,10,0x79717a);
+function squareBuilding(x,z,w,d,h,front=false){
+ squareBox(x,h/2,z,w,h,d,0x504650,true);
+ squareBox(x,.35,z,w+.12,.7,d+.12,0x69636b);
+ for(const dx of [-w/2+.12,0,w/2-.12]){
+  squareBox(x+dx,h/2,z+d/2+.04,.18,h,.18,0x29242b);
+  squareBox(x+dx,h/2,z-d/2-.04,.18,h,.18,0x29242b);
+ }
+ for(const y of [.8,2.9,h-.1])squareBox(x,y,z,w+.16,.16,d+.16,0x302832);
+ // Two sloped roof planes form a real gable from both sides, not a billboard.
+ for(const side of [-1,1]){
+  const roof=squareBox(x+side*w/4,h+.65,z,w*.58,.18,d+.65,0x302e3c);
+  roof.rotation.z=-side*.48;squareRoofs.push(roof);
+ }
+ const fz=z+(front?1:-1)*(d/2+.1);
+ squareBox(x,1.12,fz,1.55,2.24,.16,0x302a31);
+ squareBox(x,2.3,fz,1.8,.16,.24,0x81716b);
+ for(const dx of [-w*.31,w*.31]){
+  squareBox(x+dx,2.05,fz,1.1,1.15,.15,0x211e2b);
+  for(const sx of [-.3,.3])squareBox(x+dx+sx,2.05,fz+.03,.48,1.2,.16,0x4b383d);
+  squareBox(x+dx,3.8,fz,.85,.9,.13,0xb9a084);
+  squareBox(x+dx,3.8,fz+.08,.08,1,.16,0x302832);
+ }
+ squareBox(x+w*.3,h+.8,z-d*.22,.65,2,.7,0x625761);
+}
+// Inn frontage has an open doorway; its interior remains the original separate cutaway.
+squareBox(-4,2.7,-15,5,5.4,5,0x51444c,true);squareBox(4,2.7,-15,5,5.4,5,0x51444c,true);
+squareBox(0,4.05,-15,3,2.7,5,0x51444c);
+squareBox(0,1.3,-17.4,3,2.6,.2,0x211e29);
+for(const x of [-6.4,-1.55,1.55,6.4])squareBox(x,2.7,-12.4,.2,5.4,.22,0x29242b);
+for(const x of [-4,4]){squareBox(x,3.8,-12.4,1.3,1.4,.15,0xc6b895);squareBox(x,3.8,-12.25,.1,1.4,.18,0x302832);}
+for(const side of [-1,1]){const r=squareBox(side*3.25,6.3,-15,7.5,.2,5.7,0x302e3c);r.rotation.z=-side*.4;squareRoofs.push(r);}
+squareBox(0,.03,-11.8,3,.08,1.8,0x91858a);
+squareBuilding(-11,-7,6,6,5.2,true);squareBuilding(11,-6,6,7,5.8,true);
+squareBuilding(-10,9,7,6,4.8);squareBuilding(10,10,7,6,5.4);
+// Well: hollow masonry ring, dark water, posts, winding beam and rope.
+const well=new THREE.Mesh(new THREE.CylinderGeometry(1.25,1.35,.85,16,1,true),new THREE.MeshStandardMaterial({color:0x79717b,side:THREE.DoubleSide,roughness:1}));
+well.position.set(-3,.43,1);well.castShadow=true;well.receiveShadow=true;squareRoot.add(well);squareSolids.push({x:-3,z:1,w:2.8,d:2.8});
+const water=new THREE.Mesh(new THREE.CircleGeometry(1.2,20),new THREE.MeshStandardMaterial({color:0x253d4b,roughness:.25}));water.rotation.x=-Math.PI/2;water.position.set(-3,.18,1);squareRoot.add(water);
+for(const x of [-4.5,-1.5])squareBox(x,1.5,1,.16,3,.18,0x46323a);
+squareBox(-3,2.85,1,3.4,.22,.3,0x46323a);squareBox(-3,1.5,1,.035,2.6,.035,0x9c8970);
+// Closed stalls, a few forgotten wares, benches and a blank notice board.
+for(const [x,z] of [[-9,1],[9,2]]){
+ squareBox(x,.65,z,3,1.3,1.4,0x594049,true);
+ for(const dx of [-1.5,1.5])for(const dz of [-.7,.7])squareBox(x+dx,1.35,z+dz,.12,2.7,.12,0x302832);
+ const awning=squareBox(x,2.65,z,3.5,.12,2.2,x<0?0x655467:0x5b665f);awning.rotation.x=.15;
+ for(let i=0;i<5;i++)squareBox(x-1.2+i*.6,1.3,z,.5,.09,1.4,0x745b51);
+}
+for(const [x,z] of [[-5,8],[5,-6]]){
+ squareBox(x,.5,z,2.6,.16,.7,0x6b5147,true);
+ for(const dx of [-1,1])squareBox(x+dx,.24,z,.16,.48,.6,0x302832);
+ squareBox(x,.98,z+.3,2.6,.6,.12,0x59434a);
+}
+for(const x of [4.3,6.7])squareBox(x,1.25,7,.14,2.5,.18,0x302832);
+squareBox(5.5,1.8,7,2.7,1.5,.2,0x59434a,true);
+for(let i=0;i<3;i++)squareBox(4.8+i*.65,1.8+(i%2)*.2,6.88,.43,.6,.02,0xb8ad93);
+const squareGlow=new THREE.MeshStandardMaterial({color:0xffcd83,emissive:0xffa84f,emissiveIntensity:1.2});
+for(const [x,z] of [[-6,-9],[6,-9],[-5,12],[5,12]]){
+ squareBox(x,1.65,z,.13,3.3,.13,0x2a2830,true);
+ const lantern=new THREE.Mesh(new THREE.BoxGeometry(.38,.6,.38),squareGlow);lantern.position.set(x,3,z);squareRoot.add(lantern);
+ squareBox(x,3.36,z,.6,.12,.6,0x302832);
+ const light=new THREE.PointLight(0xffb86c,12,6,2);light.position.set(x,3,z);squareRoot.add(light);
+}
+// An unlettered hanging sign marks the inn without inventing a place name.
+squareBox(2.3,3,-11.8,1.7,.12,.12,0x29242b);squareBox(2.9,2.5,-11.8,.8,.8,.14,0x79614d);
+const squareReady=Promise.all([['barrel_large',-8,4,1.1],['barrel_small_stack',8,-1,1.3],['crates_stacked',10,5,1.2]].map(async([file,x,z,height])=>{
+ const gltf=await loader.loadAsync('assets/environment/dungeon/'+file+'.gltf');
+ const g=fit(gltf.scene.clone(true),height);g.position.add(new THREE.Vector3(x,0,z));g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});squareRoot.add(g);squareSolids.push({x,z,w:1.5,d:1.5});
+}));
+const morning=new THREE.DirectionalLight(0xffcb91,3);morning.position.set(55,12,-25);morning.target.position.set(80,0,0);scene.add(morning,morning.target);
+renderer.shadowMap.enabled=settings.quality!=='performance';renderer.shadowMap.type=THREE.PCFSoftShadowMap;morning.castShadow=true;
+morning.shadow.mapSize.set(1024,1024);Object.assign(morning.shadow.camera,{left:-28,right:28,top:28,bottom:-28,near:1,far:90});morning.shadow.bias=-.0005;morning.shadow.normalBias=.03;morning.shadow.radius=3;
+function squareEnter(z){inInn=false;inSquare=true;actor.position.set(80,0,z);view.anchor.copy(actor.position).y+=CAMERA_HEAD_HEIGHT;log('SESSION','Morning in the square. The inn is north; the road south leads to the clearing.');}
+function squareMove(direction,speed,dt){
+ const p=actor.position;let x=p.x-80,z=p.z;
+ const valid=(a,b)=>Math.abs(a)<14&&b>-12.5&&b<20.5&&(b<13||Math.abs(a)<2.5)&&!squareSolids.some(s=>Math.abs(a-s.x)<s.w/2+.25&&Math.abs(b-s.z)<s.d/2+.25);
+ const nx=x+direction.x*speed*dt;if(valid(nx,z))x=nx;
+ const nz=z+direction.z*speed*dt;if(valid(x,nz))z=nz;
+ p.set(80+x,0,z);
+ if(z<-11.8&&Math.abs(x)<1.25){inSquare=false;inInn=true;p.set(40,0,6.8);view.anchor.copy(p).y+=CAMERA_HEAD_HEIGHT;log('SESSION','Inside the inn.');}
+ else if(z>19.5){inSquare=false;p.set(0,0,12);view.anchor.copy(p).y+=CAMERA_HEAD_HEIGHT;log('SESSION','The road opens into the clearing.');}
+}
+function squareAtmosphere(){
+ squareRoot.visible=inSquare;morning.visible=inSquare;moon.visible=!inSquare;moonlight.visible=!inSquare;innRoot.visible=inInn;
+ scene.background.setHex(inSquare?0xaaaab4:0x080f22);scene.fog.color.copy(scene.background);scene.fog.near=inSquare?26:22;scene.fog.far=inSquare?65:85;
+ // Fade only the overhead roof when orbiting high. Closed buildings retain all four sides.
+ for(const roof of squareRoofs)roof.visible=view.distance<8||view.pitch<.6;
+}
+
 actor.position.set(37.5,3.2,-.5);view.anchor.copy(actor.position).y+=CAMERA_HEAD_HEIGHT;
 function innBlocked(x,z,y){return innSolids.some(b=>y>=b.y-.1&&y<b.top-.15&&Math.abs(x-b.x)<b.w/2+.22&&Math.abs(z-b.z)<b.d/2+.22);}
 function innMove(direction,speed,dt){
@@ -158,7 +263,7 @@ function innMove(direction,speed,dt){
  else if(x>3&&z<-4)p.y=3.2;
  else if(p.y<.15)p.y=0;
  p.x=x+40;p.z=z;
- if(z>7.4){inInn=false;p.set(0,0,12);view.anchor.copy(p).y+=CAMERA_HEAD_HEIGHT;log('SESSION','Outside. The clearing is ahead; walk back to the stone doorstep to return.');}
+ if(z>7.4){squareEnter(-10.7);}
 }
 function innCutaway(time){
  innUpper.visible=inInn&&actor.position.y>2.9;
@@ -258,7 +363,7 @@ function beginAttack(ability=kit[0]){
  dismiss();
  const a=stats.attack,first=a.clips.draw?'draw':'attack';
  if(!actions[first]){log('COMBAT','Attack clip not loaded: '+first);return;}
- if(!inInn&&goblin&&goblin.alive&&actor.position.distanceTo(goblin.group.position)<=a.range){
+ if(!inInn&&!inSquare&&goblin&&goblin.alive&&actor.position.distanceTo(goblin.group.position)<=a.range){
   actor.rotation.y=Math.atan2(goblin.group.position.x-actor.position.x,goblin.group.position.z-actor.position.z);
  }
  if(ability.cost==='camp')spentCamp.add(ability.key);
@@ -284,7 +389,7 @@ function fireAttack(){
  attack.advantage=quarry;quarry=false;
  const a=stats.attack;
  if(a.type==='melee'){
-  if(!inInn&&goblin&&goblin.alive){
+  if(!inInn&&!inSquare&&goblin&&goblin.alive){
    goblin.aggro=true;
    if(actor.position.distanceTo(goblin.group.position)<=a.range){
     const result=playerRoll();logRoll(result);
@@ -302,7 +407,7 @@ function spawnProjectile(){
  if(attack?.ability.damage){mesh.scale.multiplyScalar(1.6);mesh.material.color.setHex(0xffb45b);}
  scene.add(mesh);mesh.position.copy(origin);
  let result=null,homing=false,target=null;
- if(!inInn&&goblin&&goblin.alive){
+ if(!inInn&&!inSquare&&goblin&&goblin.alive){
   goblin.aggro=true;
   result=playerRoll();logRoll(result);
   const chest=goblin.group.position.clone();chest.y+=goblinData.model.height*0.6;
@@ -380,7 +485,7 @@ function playerDeath(){
  setTimeout(()=>{location.href='index.html';},PLAYER_DEATH_RETURN_SECONDS*1000);
 }
 function updateGoblin(dt){
- if(!goblin||inInn)return;
+ if(!goblin||inInn||inSquare)return;
  goblin.mixer.update(dt);
  if(!goblin.alive){
   if(goblin.deadClock!==null){
@@ -448,10 +553,10 @@ export const ready=(async()=>{
   if(action){action.setLoop(THREE.LoopOnce,1);action.clampWhenFinished=true;}
  }
  play('Idle_A');
- await Promise.all([loadScenery(),equipWeapon(),loadArrowTemplate(),innReady]);
+ await Promise.all([loadScenery(),equipWeapon(),loadArrowTemplate(),innReady,squareReady]);
  spawnGoblin(goblinGltf);
  introTimer=setTimeout(dismiss,INTRO_SECONDS*1000);
- log('SESSION','You wake upstairs. Through the bedroom door, turn left along the landing to the stairs. The front door below leads to the clearing.');
+ log('SESSION','You wake upstairs. Through the bedroom door, turn left along the landing to the stairs. The front door below leads to the square; the southern road leads to the clearing.');
  return true;
 })().catch(error=>{document.getElementById('hint').textContent='The clearing could not load. Escape returns to title.';console.error('World load failed',error);return false;});
 const keys=new Set();let drag=null;
@@ -562,8 +667,9 @@ function simulate(direction,running,dt){
  const animLocked=playerDead||attack||playerStagger>0;
  if(direction.lengthSq()){
   if(inInn)innMove(direction,running?RUN_SPEED:WALK_SPEED,dt);
+  else if(inSquare)squareMove(direction,running?RUN_SPEED:WALK_SPEED,dt);
   else {actor.position.addScaledVector(direction,(running?RUN_SPEED:WALK_SPEED)*dt);if(actor.position.length()>CLEARING_RADIUS)actor.position.setLength(CLEARING_RADIUS);
-   if(actor.position.z>13&&Math.abs(actor.position.x)<1.3){inInn=true;actor.position.set(40,0,6.8);view.anchor.copy(actor.position).y+=CAMERA_HEAD_HEIGHT;log('SESSION','Inside the inn.');}}
+   if(actor.position.z>13&&Math.abs(actor.position.x)<1.3){squareEnter(18.3);}}
   const target=Math.atan2(direction.x,direction.z);
   const angle=Math.atan2(Math.sin(target-actor.rotation.y),Math.cos(target-actor.rotation.y));
   actor.rotation.y+=angle*(1-Math.exp(-TURN_RESPONSE*dt));
@@ -596,11 +702,11 @@ function tick(now){
  simulate(movementIntent(),keys.has('ShiftLeft')||keys.has('ShiftRight'),dt);
  updateGoblin(dt);
  updateProjectiles(dt);
- updateView(dt);innCutaway(performance.now()/1000);renderer.render(scene,camera);frame=requestAnimationFrame(tick);
+ updateView(dt);innCutaway(performance.now()/1000);squareAtmosphere();renderer.render(scene,camera);frame=requestAnimationFrame(tick);
 }
 updateView(0);frame=requestAnimationFrame(tick);
 // Read-only diagnostics for live verification; no simulation depends on this view.
-export function snapshot(){return {location:inInn?'inn':'clearing',innAssets:innAssets.length,character:{...character},hp:{player:Math.max(0,playerHP),max:stats.hp},goblin:goblin?{hp:Math.max(0,goblin.hp),max:goblinData.hp,alive:goblin.alive,aggro:goblin.aggro,state:goblin.state,animation:goblin.animName}:null,projectiles:projectiles.length,position:actor.position.toArray(),rotation:actor.rotation.y,camera:{yaw:view.yaw,pitch:view.pitch,distance:view.distance,targetDistance:view.targetDistance},modelLoaded:!!model,modelVisible:model?.visible,animation:animationName,clips:Object.keys(actions),drawCalls:renderer.info.render.calls,pixelRatio:renderer.getPixelRatio(),theme:settings.theme};}
+export function snapshot(){return {location:inInn?'inn':inSquare?'square':'clearing',square:{buildings:5,solids:squareSolids.length,models:3},innAssets:innAssets.length,character:{...character},hp:{player:Math.max(0,playerHP),max:stats.hp},goblin:goblin?{hp:Math.max(0,goblin.hp),max:goblinData.hp,alive:goblin.alive,aggro:goblin.aggro,state:goblin.state,animation:goblin.animName}:null,projectiles:projectiles.length,position:actor.position.toArray(),rotation:actor.rotation.y,camera:{yaw:view.yaw,pitch:view.pitch,distance:view.distance,targetDistance:view.targetDistance},modelLoaded:!!model,modelVisible:model?.visible,animation:animationName,clips:Object.keys(actions),drawCalls:renderer.info.render.calls,pixelRatio:renderer.getPixelRatio(),theme:settings.theme};}
 window.addEventListener('pagehide',()=>{
  cancelAnimationFrame(frame);clearTimeout(introTimer);mixer?.stopAllAction();goblin?.mixer.stopAllAction();
  const geometries=new Set(),materials=new Set(),textures=new Set();
