@@ -22,7 +22,7 @@ export const CREATURES={
       weapon:{path:'assets/weapons/adventurers/staff.gltf',slot:'handslotr'}}
   },
   Goblin:{
-    hp:7,attackBonus:4,defense:13,damage:{count:1,sides:6,bonus:2},
+    hp:6,attackBonus:2,defense:12,damage:{count:1,sides:4,bonus:0},
     ai:{runSpeed:5,aggroRadius:10,attackReach:1.8,attackCooldown:1.5,impactAt:0.5,staggerSeconds:0.4},
     model:{path:'assets/characters/monsters/Goblin.glb',height:1.1,
       clipSuffixes:{idle:'Idle',run:'Run',attack:'Attack',hit:'HitRecieve',death:'Death'}}
