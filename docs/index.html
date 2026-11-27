@@ -10,7 +10,8 @@
 :root{color-scheme:dark;--ui-accent:#dfbc70;--ui-text:#eaf5ff;--ui-subtitle:#a9c5df;--ui-panel-top:#203c60;--ui-panel-mid:#132947;--night:#080f22}
 *{box-sizing:border-box}
 body{margin:0;background:var(--night);color:var(--ui-text);font-family:Cinzel,Georgia,serif}
-.sky{position:fixed;inset:0;overflow:hidden;pointer-events:none;background:radial-gradient(ellipse at 70% 20%,#203c60 0%,transparent 48%),linear-gradient(var(--night),#0b162b)}
+.sky{position:fixed;inset:0;overflow:hidden;pointer-events:none;background:url('./play/assets/backdrop-landing.jpg') center / cover no-repeat,radial-gradient(ellipse at 70% 20%,#203c60 0%,transparent 48%),linear-gradient(var(--night),#0b162b)}
+.stars,.aurora,.moon,.ridge{display:none}
 .stars{position:absolute;inset:0;background-image:radial-gradient(circle,#eaf5ff 1px,transparent 1.5px),radial-gradient(circle,#a9c5df 1px,transparent 1.5px);background-size:137px 173px,211px 257px;background-position:23px 19px,81px 63px;opacity:.4}
 .aurora{position:absolute;inset:-30% -20% 35%;background:radial-gradient(ellipse at center,transparent 40%,rgba(69,191,206,.14) 48%,transparent 61%);transform:rotate(-18deg);filter:blur(20px)}
 .moon{position:absolute;top:12%;left:72%;width:clamp(64px,10vw,112px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 35% 30%,#eaf5ff,#a9c5df);box-shadow:0 0 60px rgba(169,197,223,.25)}
