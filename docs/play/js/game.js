@@ -44,7 +44,7 @@ function loadCharacter(){
 }
 const character=loadCharacter();
 const stats=CREATURES[character.class],goblinData=CREATURES.Goblin;
-log('SESSION',character.name+' the '+character.race+' '+character.class+' enters the clearing.');
+log('SESSION',character.name+' the '+character.race+' '+character.class+' wakes in the inn.');
 const intro=document.getElementById('intro');
 document.getElementById('tale').textContent='The tale of '+character.name+' the '+character.race+' '+character.class+' begins.';
 const dismiss=()=>intro.classList.add('dismissed');
@@ -52,7 +52,7 @@ let introTimer;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x080f22);scene.fog=new THREE.Fog(0x080f22,22,85);
 const renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setClearColor(0x080f22);renderer.outputColorSpace=THREE.SRGBColorSpace;
-renderer.domElement.setAttribute('aria-label','Moonlit clearing. WASD move, Shift run, click attack, drag orbit, scroll zoom, L save log, Escape title.');
+renderer.domElement.setAttribute('aria-label','The inn and clearing. WASD move, Shift run, click attack, drag orbit, scroll zoom, L save log, Escape title.');
 document.body.prepend(renderer.domElement);
 const camera=new THREE.PerspectiveCamera(55,1,0.05,160);
 function resize(){
@@ -79,6 +79,94 @@ function fit(object,height){
  const scale=height/(size.y||1);object.scale.multiplyScalar(scale);
  object.position.set(-center.x*scale,-box.min.y*scale,-center.z*scale);return object;
 }
+
+// The inn: roofless, camera-aware cutaway; dimensions in metres, no place names.
+const innRoot=new THREE.Group(),innUpper=new THREE.Group(),innWalls=[],innSolids=[];
+innRoot.position.x=40;scene.add(innRoot);innRoot.add(innUpper);
+let inInn=true;const innAssets=[];
+function innBox(x,y,z,w,h,d,color,group=innRoot,solid=false){
+ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshStandardMaterial({color,roughness:.92}));
+ m.position.set(x,y,z);group.add(m);
+ if(solid)innSolids.push({x,z,w,d,y:y-h/2,top:y+h/2});return m;
+}
+function innWall(x,y,z,w,h,d,group=innRoot){const m=innBox(x,y,z,w,h,d,0x343039,group,true);innWalls.push(m);return m;}
+function innLamp(x,y,z,color=0xffb36a,power=16){const light=new THREE.PointLight(color,power,8,2);light.position.set(x,y,z);innRoot.add(light);return light;}
+function innProp(file,x,y,z,height,turn=0,w=.9,d=.9){
+ innAssets.push(async()=>{const gltf=await loader.loadAsync('assets/environment/dungeon/'+file+'.gltf');
+ const g=new THREE.Group();g.add(fit(gltf.scene.clone(true),height));g.position.set(x,y,z);g.rotation.y=turn;
+ (y>=3?innUpper:innRoot).add(g);});
+ innSolids.push({x,z,w,d,y,top:y+height});
+}
+innBox(0,-.15,0,12,.3,12,0x3a3030);
+innBox(-1.5,3.05,0,9,.3,12,0x47372f,innUpper);
+innBox(4.5,3.05,-5,3,.3,2,0x47372f,innUpper);
+for(let i=0;i<16;i++){const h=3.2*(16-i)/16;innBox(4.4,h/2,-3.75+i*.5,2.5,h,.5,0x594435);}
+for(const y of [1.5,4.7]){
+ const g=y>3?innUpper:innRoot;
+ innWall(-6,y,0,.25,3,12,g);innWall(6,y,0,.25,3,12,g);
+ innWall(0,y,-6,12,3,.25,g);
+ if(y<3){innWall(-3.7,y,6,4.6,3,.25,g);innWall(3.7,y,6,4.6,3,.25,g);innBox(0,2.85,6,2.8,.3,.3,0x563b2d);}
+ else innWall(0,y,6,12,3,.25,g);
+ for(const x of [-5.8,0,5.8])innBox(x,y, -5.8,.22,3,.3,0x231c21,g);
+}
+// Bedroom door into a short landing; the stairwell is open to the common room.
+innWall(1,4.7,-3.5,.18,3,5,innUpper);innWall(1,4.7,3,.18,3,6,innUpper);
+innBox(1,6,-.5,.26,.3,1,0x684b34,innUpper);
+// Window opening is set into the west wall as a luminous inset with open shutters.
+innBox(-5.83,4.9,-2,.08,1.25,1.65,0xc6b895,innUpper);
+for(const z of [-3.05,-.95]){const shutter=innBox(-5.45,4.9,z,.1,1.5,.65,0x392b2b,innUpper);shutter.rotation.y=z<-2?-.6:.6;}
+innLamp(-5.1,5,-2,0xffddb0,22);
+innProp('bed_decorated',-3.9,3.2,-3.3,1.05,0,1.7,2.8);
+innProp('chest',-4.6,3.2,1,.7,0,1.3,.8);
+innProp('table_small',-3.8,3.2,4.7,.85,0,1.3,.8);
+const basin=new THREE.Mesh(new THREE.TorusGeometry(.3,.08,8,20),new THREE.MeshStandardMaterial({color:0xaaa698}));basin.rotation.x=Math.PI/2;basin.position.set(-3.8,4.1,4.7);innUpper.add(basin);
+innBox(-2,3.215,0,2.8,.025,3.2,0x5e2734,innUpper);
+// Bar, shelves, bottles and three seating clusters leave a clear central aisle.
+innBox(-3.9,.6,-3.5,3.3,1.2,.8,0x4d302b,innRoot,true);
+innBox(-3.9,1.24,-3.5,3.6,.12,1,0x77523c);
+innProp('shelf_large',-4.2,0,-5.35,2.3,0,2.4,.65);
+for(let i=0;i<6;i++)innProp(i%2?'bottle_A_green':'bottle_B_brown',-5+i*.43,1.32,-3.5,.3,0,.1,.1);
+for(const [x,z] of [[-3,0],[-3,3.5],[1,-2.4]]){
+ innProp('table_medium',x,0,z,.85,0,1.6,1.2);
+ for(const dz of [-1.1,1.1])innProp('chair',x,0,z+dz,1.1,dz<0?0:Math.PI,.65,.65);
+ innLamp(x,2.5,z,0xffb36a,12);
+}
+innProp('barrel_large',5,0,4.8,1.1);innProp('barrel_small_stack',4,0,5,1.2);
+// Built masonry hearth and flames: architectural geometry, not a borrowed building sprite.
+innBox(-5.45,.14,2.2,1,.28,2.3,0x56505a,innRoot,true);
+for(const z of [1.2,3.2])innBox(-5.45,1,z,1,1.8,.3,0x4a444d,innRoot,true);
+innBox(-5.45,1.9,2.2,1.2,.3,2.5,0x69616a);
+for(let i=0;i<5;i++){const f=new THREE.Mesh(new THREE.ConeGeometry(.14,.5+i%2*.25,6),new THREE.MeshBasicMaterial({color:i%2?0xffd47d:0xf27436}));f.position.set(-5.2,.5,1.6+i*.3);innRoot.add(f);}
+const innFire=innLamp(-4.9,.9,2.2,0xff8a43,28);
+innBox(0,.012,2.2,1.8,.025,4,0x622e3a);
+innBox(0,-.04,7.1,3,.15,2.2,0x655c65);
+const doorstep=innBox(0,.025,13.5,2.8,.05,1.5,0x655c65,scene);
+actor.position.set(37.5,3.2,-.5);view.anchor.copy(actor.position).y+=CAMERA_HEAD_HEIGHT;
+function innBlocked(x,z,y){return innSolids.some(b=>y>=b.y-.1&&y<b.top-.15&&Math.abs(x-b.x)<b.w/2+.22&&Math.abs(z-b.z)<b.d/2+.22);}
+function innMove(direction,speed,dt){
+ const p=actor.position,upper=p.y>3.05;
+ const valid=(x,z)=>{
+  if(x<-5.6||x>5.6||z<-5.6||z>7.8)return false;
+  if(upper&&x>3&&z>4.1)return false;
+  return !innBlocked(x,z,p.y);
+ };
+ let x=p.x-40,z=p.z;
+ const nx=x+direction.x*speed*dt;const crossStair=(x<=3&&nx>3||x>3&&nx<=3)&&p.y>.12&&z> -3.8;if(!crossStair&&valid(nx,z))x=nx;
+ const nz=z+direction.z*speed*dt;if(valid(x,nz))z=nz;
+ // The stair ramp is the walk surface; visible treads remain discrete.
+ if(x>3&&z>=-4&&z<=4)p.y=3.2*(4-z)/8;
+ else if(x>3&&z<-4)p.y=3.2;
+ else if(p.y<.15)p.y=0;
+ p.x=x+40;p.z=z;
+ if(z>7.4){inInn=false;p.set(0,0,12);view.anchor.copy(p).y+=CAMERA_HEAD_HEIGHT;log('SESSION','Outside. The clearing is ahead; walk back to the stone doorstep to return.');}
+}
+function innCutaway(time){
+ innUpper.visible=inInn&&actor.position.y>2.9;
+ for(const m of innWalls){const local=m.position; m.visible=!(camera.position.x<34&&local.x< -5||camera.position.x>46&&local.x>5||camera.position.z>6&&local.z>5||camera.position.z< -6&&local.z< -5);}
+ innFire.intensity=26+Math.sin(time*7)*2;
+}
+const innReady=Promise.all(innAssets.map(fn=>fn()));
+
 const scenery=[
  ['nature/forest/Tree_1_A_Color1.gltf',[-12,0,-12],8],
  ['nature/forest/Tree_1_A_Color1.gltf',[14,0,-10],9],
@@ -170,7 +258,7 @@ function beginAttack(ability=kit[0]){
  dismiss();
  const a=stats.attack,first=a.clips.draw?'draw':'attack';
  if(!actions[first]){log('COMBAT','Attack clip not loaded: '+first);return;}
- if(goblin&&goblin.alive&&actor.position.distanceTo(goblin.group.position)<=a.range){
+ if(!inInn&&goblin&&goblin.alive&&actor.position.distanceTo(goblin.group.position)<=a.range){
   actor.rotation.y=Math.atan2(goblin.group.position.x-actor.position.x,goblin.group.position.z-actor.position.z);
  }
  if(ability.cost==='camp')spentCamp.add(ability.key);
@@ -196,7 +284,7 @@ function fireAttack(){
  attack.advantage=quarry;quarry=false;
  const a=stats.attack;
  if(a.type==='melee'){
-  if(goblin&&goblin.alive){
+  if(!inInn&&goblin&&goblin.alive){
    goblin.aggro=true;
    if(actor.position.distanceTo(goblin.group.position)<=a.range){
     const result=playerRoll();logRoll(result);
@@ -214,7 +302,7 @@ function spawnProjectile(){
  if(attack?.ability.damage){mesh.scale.multiplyScalar(1.6);mesh.material.color.setHex(0xffb45b);}
  scene.add(mesh);mesh.position.copy(origin);
  let result=null,homing=false,target=null;
- if(goblin&&goblin.alive){
+ if(!inInn&&goblin&&goblin.alive){
   goblin.aggro=true;
   result=playerRoll();logRoll(result);
   const chest=goblin.group.position.clone();chest.y+=goblinData.model.height*0.6;
@@ -292,7 +380,7 @@ function playerDeath(){
  setTimeout(()=>{location.href='index.html';},PLAYER_DEATH_RETURN_SECONDS*1000);
 }
 function updateGoblin(dt){
- if(!goblin)return;
+ if(!goblin||inInn)return;
  goblin.mixer.update(dt);
  if(!goblin.alive){
   if(goblin.deadClock!==null){
@@ -360,10 +448,10 @@ export const ready=(async()=>{
   if(action){action.setLoop(THREE.LoopOnce,1);action.clampWhenFinished=true;}
  }
  play('Idle_A');
- await Promise.all([loadScenery(),equipWeapon(),loadArrowTemplate()]);
+ await Promise.all([loadScenery(),equipWeapon(),loadArrowTemplate(),innReady]);
  spawnGoblin(goblinGltf);
  introTimer=setTimeout(dismiss,INTRO_SECONDS*1000);
- log('SESSION','World loaded. The duel awaits.');
+ log('SESSION','You wake upstairs. Through the bedroom door, turn left along the landing to the stairs. The front door below leads to the clearing.');
  return true;
 })().catch(error=>{document.getElementById('hint').textContent='The clearing could not load. Escape returns to title.';console.error('World load failed',error);return false;});
 const keys=new Set();let drag=null;
@@ -473,8 +561,9 @@ function simulate(direction,running,dt){
  if(playerDead)direction=new THREE.Vector3();
  const animLocked=playerDead||attack||playerStagger>0;
  if(direction.lengthSq()){
-  actor.position.addScaledVector(direction,(running?RUN_SPEED:WALK_SPEED)*dt);
-  if(actor.position.length()>CLEARING_RADIUS)actor.position.setLength(CLEARING_RADIUS);
+  if(inInn)innMove(direction,running?RUN_SPEED:WALK_SPEED,dt);
+  else {actor.position.addScaledVector(direction,(running?RUN_SPEED:WALK_SPEED)*dt);if(actor.position.length()>CLEARING_RADIUS)actor.position.setLength(CLEARING_RADIUS);
+   if(actor.position.z>13&&Math.abs(actor.position.x)<1.3){inInn=true;actor.position.set(40,0,6.8);view.anchor.copy(actor.position).y+=CAMERA_HEAD_HEIGHT;log('SESSION','Inside the inn.');}}
   const target=Math.atan2(direction.x,direction.z);
   const angle=Math.atan2(Math.sin(target-actor.rotation.y),Math.cos(target-actor.rotation.y));
   actor.rotation.y+=angle*(1-Math.exp(-TURN_RESPONSE*dt));
@@ -507,11 +596,11 @@ function tick(now){
  simulate(movementIntent(),keys.has('ShiftLeft')||keys.has('ShiftRight'),dt);
  updateGoblin(dt);
  updateProjectiles(dt);
- updateView(dt);renderer.render(scene,camera);frame=requestAnimationFrame(tick);
+ updateView(dt);innCutaway(performance.now()/1000);renderer.render(scene,camera);frame=requestAnimationFrame(tick);
 }
 updateView(0);frame=requestAnimationFrame(tick);
 // Read-only diagnostics for live verification; no simulation depends on this view.
-export function snapshot(){return {character:{...character},hp:{player:Math.max(0,playerHP),max:stats.hp},goblin:goblin?{hp:Math.max(0,goblin.hp),max:goblinData.hp,alive:goblin.alive,aggro:goblin.aggro,state:goblin.state,animation:goblin.animName}:null,projectiles:projectiles.length,position:actor.position.toArray(),rotation:actor.rotation.y,camera:{yaw:view.yaw,pitch:view.pitch,distance:view.distance,targetDistance:view.targetDistance},modelLoaded:!!model,modelVisible:model?.visible,animation:animationName,clips:Object.keys(actions),drawCalls:renderer.info.render.calls,pixelRatio:renderer.getPixelRatio(),theme:settings.theme};}
+export function snapshot(){return {location:inInn?'inn':'clearing',innAssets:innAssets.length,character:{...character},hp:{player:Math.max(0,playerHP),max:stats.hp},goblin:goblin?{hp:Math.max(0,goblin.hp),max:goblinData.hp,alive:goblin.alive,aggro:goblin.aggro,state:goblin.state,animation:goblin.animName}:null,projectiles:projectiles.length,position:actor.position.toArray(),rotation:actor.rotation.y,camera:{yaw:view.yaw,pitch:view.pitch,distance:view.distance,targetDistance:view.targetDistance},modelLoaded:!!model,modelVisible:model?.visible,animation:animationName,clips:Object.keys(actions),drawCalls:renderer.info.render.calls,pixelRatio:renderer.getPixelRatio(),theme:settings.theme};}
 window.addEventListener('pagehide',()=>{
  cancelAnimationFrame(frame);clearTimeout(introTimer);mixer?.stopAllAction();goblin?.mixer.stopAllAction();
  const geometries=new Set(),materials=new Set(),textures=new Set();
