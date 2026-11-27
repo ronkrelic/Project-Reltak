@@ -4,9 +4,11 @@ import {loadSettings} from './settings.js';
 import {applyTheme} from './theme.js';
 import {resolveAttack} from './combat.js';
 import {CREATURES} from './data/creatures.js';
-import {initCapture,log,downloadLog} from './log.js';
+import {initCapture,log as coreLog,downloadLog} from './log.js';
+import {HUD} from './hud.js';
 
 initCapture();
+const log=(tag,...args)=>{HUD.message(args.join(' '),tag);coreLog(tag,...args);};
 log('SESSION','RELTAK session log active. Press L in game to save it.');
 
 // Simulation owns world-space movement. Only the input adapter knows view yaw.
@@ -49,7 +51,7 @@ let introTimer;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x080f22);scene.fog=new THREE.Fog(0x080f22,22,85);
 const renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setClearColor(0x080f22);renderer.outputColorSpace=THREE.SRGBColorSpace;
-renderer.domElement.setAttribute('aria-label','Moonlit clearing. WASD move, Shift run, F attack, drag orbit, scroll zoom, L save log, Escape title.');
+renderer.domElement.setAttribute('aria-label','Moonlit clearing. WASD move, Shift run, click attack, drag orbit, scroll zoom, L save log, Escape title.');
 document.body.prepend(renderer.domElement);
 const camera=new THREE.PerspectiveCamera(55,1,0.05,160);
 function resize(){
@@ -97,20 +99,8 @@ async function loadScenery(){
 // The duel. Everything here is game logic and staging; none of it knows the camera.
 let playerHP=stats.hp,playerDead=false,playerStagger=0,attack=null,attackCooldown=0,arrowTemplate=null;
 const projectiles=[],goblinMaterials=[];let goblin=null;
-const hudStyle=document.createElement('style');
-hudStyle.textContent=`#hud,#goblin-hud{position:fixed;z-index:5;pointer-events:none;font-family:Cinzel,Georgia,serif}#hud{left:16px;bottom:16px}#goblin-hud{top:16px;left:50%;transform:translateX(-50%);text-align:center}.bar-label{font-size:11px;letter-spacing:.08em;color:var(--ui-subtitle);margin:0 0 3px;text-shadow:0 2px 4px #000;text-transform:uppercase}.bar{width:220px;height:10px;border:1px solid var(--ui-accent);background:var(--ui-panel-mid)}.bar>div{height:100%;width:100%;background:var(--ui-accent-bright);transition:width .25s}html[data-reduce-motion="true"] .bar>div{transition:none}#death-veil{position:fixed;inset:0;background:#080f22;opacity:0;transition:opacity 1.2s;pointer-events:none;z-index:9}#death-veil.fallen{opacity:1}html[data-reduce-motion="true"] #death-veil{transition:none}`;
-document.head.append(hudStyle);
-const hud=document.createElement('div');hud.id='hud';
-hud.innerHTML='<p class="bar-label">'+character.name+' - '+character.class+'</p><div class="bar"><div id="player-hp"></div></div>';
-const goblinHud=document.createElement('div');goblinHud.id='goblin-hud';goblinHud.hidden=true;
-goblinHud.innerHTML='<p class="bar-label">Goblin</p><div class="bar"><div id="goblin-hp"></div></div>';
-document.body.append(hud,goblinHud);
-const playerHpFill=document.getElementById('player-hp'),goblinHpFill=document.getElementById('goblin-hp');
-function updateBars(){
- playerHpFill.style.width=Math.max(0,playerHP/stats.hp*100)+'%';
- goblinHud.hidden=!(goblin&&goblin.aggro&&goblin.alive);
- if(goblin)goblinHpFill.style.width=Math.max(0,goblin.hp/goblinData.hp*100)+'%';
-}
+HUD.build(character.name,character.class);
+function updateBars(){HUD.setHealth(playerHP,stats.hp);}
 updateBars();
 function logRoll(result){
  log('COMBAT','d20 '+result.d20+' + '+result.attackBonus+' = '+result.total+' vs defense '+result.defense+' -> '+(result.nat1?'automatic miss':result.crit?'CRITICAL HIT':result.hit?'hit':'miss'));
@@ -130,12 +120,12 @@ async function loadArrowTemplate(){
 }
 function spawnGoblin(gltf){
  const group=new THREE.Group();
- const body=fit(gltf.scene.clone(true),goblinData.model.height);
+ const body=fit(gltf.scene,goblinData.model.height);
  group.add(body);group.position.set(GOBLIN_SPAWN.x,0,GOBLIN_SPAWN.z);scene.add(group);
  const goblinMixer=new THREE.AnimationMixer(body),acts={};
  for(const [key,suffix] of Object.entries(goblinData.model.clipSuffixes)){
   const clip=gltf.animations.find(a=>a.name.split('|').pop()===suffix);
-  if(clip)acts[key]=mixer.clipAction.call(goblinMixer,clip);else console.warn('Goblin clip unavailable: '+key+' ('+suffix+')');
+  if(clip)acts[key]=goblinMixer.clipAction(clip);else console.warn('Goblin clip unavailable: '+key+' ('+suffix+')');
  }
  for(const key of ['attack','hit','death'])if(acts[key]){acts[key].setLoop(THREE.LoopOnce,1);acts[key].clampWhenFinished=true;}
  goblin={group,mixer:goblinMixer,actions:acts,activeAction:null,animName:'none',hp:goblinData.hp,alive:true,aggro:false,state:'idle',attackT:0,attackHit:false,attackCooldown:0,stagger:0,deadClock:null};
@@ -384,15 +374,46 @@ window.addEventListener('blur',()=>{keys.clear();drag=null;});
 document.addEventListener('visibilitychange',()=>{keys.clear();drag=null;});
 const canvas=renderer.domElement;
 canvas.addEventListener('contextmenu',event=>event.preventDefault());
-canvas.addEventListener('click',()=>{if(inLookRange())void requestLook();});
-canvas.addEventListener('pointerdown',event=>{if(isLocked())return;drag={id:event.pointerId,x:event.clientX,y:event.clientY};canvas.setPointerCapture(event.pointerId);dismiss();});
+// One trigger, two meanings: locked in, LMB swings at what you face; unlocked, a true click on the goblin swings at it.
+const CLICK_MOVE_PX=6,CLICK_HOLD_MS=500;
+const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
+let clickArmed=false;
+function clickAttack(event){
+ if(!goblin||!goblin.alive)return false;
+ const rect=canvas.getBoundingClientRect();
+ pointer.set(((event.clientX-rect.left)/rect.width)*2-1,-((event.clientY-rect.top)/rect.height)*2+1);
+ raycaster.setFromCamera(pointer,camera);
+ if(!raycaster.intersectObject(goblin.group,true).length)return false;
+ if(actor.position.distanceTo(goblin.group.position)>stats.attack.range+0.5){log('COMBAT','Too far to strike.');return true;}
+ beginAttack();
+ return true;
+}
+canvas.addEventListener('click',event=>{
+ if(!clickArmed)return;
+ clickArmed=false;
+ if(event.button!==0)return;
+ if(clickAttack(event))return;
+ if(inLookRange())void requestLook();
+});
+canvas.addEventListener('pointerdown',event=>{
+ clickArmed=false;
+ if(isLocked()){if(event.button===0)beginAttack();return;}
+ drag={id:event.pointerId,x:event.clientX,y:event.clientY,moved:0,downAt:performance.now()};
+ canvas.setPointerCapture(event.pointerId);dismiss();
+});
 canvas.addEventListener('pointermove',event=>{
  if(isLocked()||!drag||drag.id!==event.pointerId)return;
+ drag.moved+=Math.abs(event.clientX-drag.x)+Math.abs(event.clientY-drag.y);
  view.yaw-=(event.clientX-drag.x)*CAMERA_ORBIT_SENSITIVITY;
  view.pitch=THREE.MathUtils.clamp(view.pitch+(event.clientY-drag.y)*CAMERA_ORBIT_SENSITIVITY,CAMERA_MIN_PITCH,CAMERA_MAX_PITCH);
  drag.x=event.clientX;drag.y=event.clientY;
 });
-for(const type of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(type,()=>{drag=null;});
+canvas.addEventListener('pointerup',event=>{
+ if(drag&&drag.id===event.pointerId&&event.button===0&&drag.moved<CLICK_MOVE_PX&&performance.now()-drag.downAt<CLICK_HOLD_MS)clickArmed=true;
+ drag=null;
+});
+canvas.addEventListener('pointercancel',()=>{drag=null;clickArmed=false;});
+canvas.addEventListener('lostpointercapture',()=>{drag=null;});
 canvas.addEventListener('wheel',event=>{
  event.preventDefault();dismiss();
  const pixels=event.deltaY*(event.deltaMode===1?16:event.deltaMode===2?innerHeight:1);
@@ -433,6 +454,7 @@ function updateView(dt){
 let last=performance.now(),frame;
 function tick(now){
  const dt=Math.min(MAX_FRAME_DELTA,(now-last)/1000);last=now;
+ HUD.setPlayerPosition(actor.position.x,actor.position.z);
  if(attackCooldown>0)attackCooldown-=dt;
  if(playerStagger>0)playerStagger-=dt;
  updateAttack(dt);
