@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="RELTAK — Beyond the waking stars. A world by Relic & Ember Studios.">
+<title>RELTAK — We wake worlds!</title>
+<style>
+@font-face{font-family:Cinzel;src:url('./play/assets/fonts/Cinzel%5Bwght%5D.ttf') format('truetype');font-weight:100 900;font-display:swap}
+:root{color-scheme:dark;--ui-accent:#dfbc70;--ui-text:#eaf5ff;--ui-subtitle:#a9c5df;--ui-panel-top:#203c60;--ui-panel-mid:#132947;--night:#080f22}
+*{box-sizing:border-box}
+body{margin:0;background:var(--night);color:var(--ui-text);font-family:Cinzel,Georgia,serif}
+.sky{position:fixed;inset:0;overflow:hidden;pointer-events:none;background:radial-gradient(ellipse at 70% 20%,#203c60 0%,transparent 48%),linear-gradient(var(--night),#0b162b)}
+.stars{position:absolute;inset:0;background-image:radial-gradient(circle,#eaf5ff 1px,transparent 1.5px),radial-gradient(circle,#a9c5df 1px,transparent 1.5px);background-size:137px 173px,211px 257px;background-position:23px 19px,81px 63px;opacity:.4}
+.aurora{position:absolute;inset:-30% -20% 35%;background:radial-gradient(ellipse at center,transparent 40%,rgba(69,191,206,.14) 48%,transparent 61%);transform:rotate(-18deg);filter:blur(20px)}
+.moon{position:absolute;top:12%;left:72%;width:clamp(64px,10vw,112px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 35% 30%,#eaf5ff,#a9c5df);box-shadow:0 0 60px rgba(169,197,223,.25)}
+.ridge{position:absolute;inset:55% -5% 0;background:#132947;clip-path:polygon(0 65%,12% 20%,20% 46%,33% 0,44% 49%,56% 24%,66% 62%,81% 6%,90% 38%,100% 12%,100% 100%,0 100%)}
+.near{inset:68% -5% 0;background:var(--night);clip-path:polygon(0 22%,17% 63%,30% 28%,45% 80%,62% 38%,73% 64%,89% 16%,100% 40%,100% 100%,0 100%)}
+main{position:relative;min-height:100vh;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:110px 24px 44px;background:radial-gradient(ellipse at center,rgba(8,15,34,.65),transparent 70%)}
+h1{margin:0;font-size:clamp(3rem,12vw,7rem);font-weight:700;letter-spacing:.14em;padding-left:.14em;color:var(--ui-accent);background:linear-gradient(180deg,#eaf5ff 0%,#dfbc70 35%,#dfbc70 100%);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 22px rgba(223,188,112,.25))}
+.subtitle{margin:12px 0 28px;color:var(--ui-subtitle);font-size:clamp(.75rem,2.5vw,1rem);letter-spacing:.16em}
+.divider{width:min(280px,70%);height:1px;background:linear-gradient(90deg,transparent,#dfbc70,transparent)}
+.tagline{margin:26px 0 30px;font-size:clamp(1rem,3vw,1.25rem);letter-spacing:.08em}
+.play{display:inline-block;min-width:220px;padding:18px 32px;border:1px solid var(--ui-accent);outline:1px solid rgba(223,188,112,.4);outline-offset:-5px;background:linear-gradient(var(--ui-panel-top),var(--ui-panel-mid));color:var(--ui-accent);text-decoration:none;letter-spacing:.22em;font-weight:700;box-shadow:0 0 28px rgba(223,188,112,.12)}
+a:focus-visible{outline:2px solid var(--ui-text);outline-offset:6px}
+.play:hover{background:var(--ui-panel-top);box-shadow:0 0 28px rgba(223,188,112,.35)}
+.source{margin-top:24px;padding:12px;color:var(--ui-subtitle);font-size:.8rem;text-underline-offset:5px}
+.source:hover{color:var(--ui-text)}
+footer{margin-top:56px;color:var(--ui-subtitle);font-size:.7rem;line-height:1.8}
+@media(max-width:480px){.moon{left:76%;top:7%}main{padding-inline:18px}.subtitle{letter-spacing:.1em}footer{max-width:240px}}
+section{width:min(960px,100%);margin:64px auto 0;text-align:left}h2{color:var(--ui-accent);font-size:1.35rem}section p,li{font-family:Georgia,serif;line-height:1.7;color:var(--ui-text)}.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:20px;list-style:none;padding:0}.features li{padding:20px;border-top:1px solid rgba(223,188,112,.4);background:rgba(19,41,71,.65)}strong{color:var(--ui-accent)}section a{color:var(--ui-accent)}.intro{max-width:600px;margin:24px auto 0;font-family:Georgia,serif;line-height:1.7}.version{color:var(--ui-subtitle);font-size:.75rem;letter-spacing:.12em}footer .tagline{color:var(--ui-text)}
+</style>
+</head>
+<body>
+<div class="sky" aria-hidden="true"><div class="stars"></div><div class="aurora"></div><div class="moon"></div><div class="ridge"></div><div class="ridge near"></div></div>
+<main>
+<h1>RELTAK</h1>
+<p class="subtitle">Beyond the waking stars</p>
+<div class="divider" aria-hidden="true"></div>
+<p class="tagline">We wake worlds!</p>
+<a class="play" href="./play/">PLAY</a>
+<a class="source" href="https://github.com/ronkrelic/Project-Reltak">Source on GitHub</a>
+<p class="version">v0.00a · Early alpha</p>
+<p class="intro">A high-fantasy adventure RPG, entirely in your browser. No install, no download, no launcher, no account. Open the link and stand in the world.</p>
+<section aria-labelledby="why"><h2 id="why">A world worth waking</h2>
+<p>The first clearing is only the beginning. Step into an early alpha where the foundations of an adventure are already taking shape.</p>
+<ul class="features">
+<li><strong>Choose your beginning.</strong><br>Character creation with data-driven races and classes.</li>
+<li><strong>Walk The Clearing.</strong><br>Explore a walkable 3D world, with a camera spanning wide isometric views to first person.</li>
+<li><strong>Let the dice speak.</strong><br>Face a goblin in d20-driven combat. Natural-20 critical hits included.</li>
+<li><strong>Find your bearings.</strong><br>A HUD with a fog-of-war minimap and a session log keeps the journey in view.</li>
+<li><strong>Set the atmosphere.</strong><br>Four interface themes: Astral Relics, Crown and Ember, Moss and Moon, and Obsidian Grimoire.</li>
+</ul></section>
+<section aria-labelledby="open"><h2 id="open">Built in the open</h2><p>The whole game is developed publicly. <a href="https://github.com/ronkrelic/Project-Reltak">Watch it grow commit by commit on GitHub.</a> Early alpha now; follow along as new lands take shape.</p></section>
+<section aria-labelledby="soon"><h2 id="soon">Beyond the horizon</h2><p>Coming soon: more enemies, distinct class kits, dungeons, and a dragon named Reltak. These are the roads ahead, not promises of what is playable today.</p></section>
+<footer><p class="tagline">We wake worlds!</p>Designed and Made by Relic &amp; Ember Studios</footer>
+</main>
+</body>
+</html>
