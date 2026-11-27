@@ -108,7 +108,7 @@ let focus=2,guard=null,quarry=false,rootSeconds=0;
 HUD.setAbilities(kit);
 function abilityState(a){
  if(spentCombat.has(a.key)||spentCamp.has(a.key))return 'spent';
- if(playerDead||!model||playerStagger>0||attack||attackCooldown>0||guard?.ability===a||quarry&&a.type==='advantage'||a.cost.startsWith('focus')&&focus===0)return 'unavailable';
+ if(playerDead||!model||a.type==='attack'&&(playerStagger>0||attack||attackCooldown>0)||guard?.ability===a||quarry&&a.type==='advantage'||a.cost.startsWith('focus')&&focus===0)return 'unavailable';
  return 'ready';
 }
 function refreshAbilities(){
