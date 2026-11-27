@@ -152,11 +152,18 @@ function squareBox(x,y,z,w,h,d,color,solid=false){
 }
 // Staggered cobbles, continuous low walk surface, and a narrow road through the southern gap.
 squareBox(0,-.12,0,32,.2,38,0x4e5358);
+const cobbles=[[],[],[]];
 for(let row=0;row<34;row++)for(let col=0;col<27;col++){
  const x=-13+col*.98+(row%2)*.47,z=-12+row*.85;
  if(z>13&&Math.abs(x)>2.6)continue;
- squareBox(x,-.008,z,.89,.025,.75,[0x64616a,0x706b70,0x595a64][(row*7+col*3+col%2)%3]);
+ cobbles[(row*7+col*3+col%2)%3].push([x,z]);
 }
+// Three instanced draws rather than hundreds of separate paving meshes.
+cobbles.forEach((positions,i)=>{
+ const mesh=new THREE.InstancedMesh(new THREE.BoxGeometry(.89,.025,.75),new THREE.MeshStandardMaterial({color:[0x64616a,0x706b70,0x595a64][i],roughness:1}),positions.length);
+ const matrix=new THREE.Matrix4();positions.forEach(([x,z],index)=>mesh.setMatrixAt(index,matrix.makeTranslation(x,-.008,z)));
+ mesh.receiveShadow=true;squareRoot.add(mesh);
+});
 for(const x of [-3,3])squareBox(x,.06,16,.22,.22,10,0x79717a);
 function squareBuilding(x,z,w,d,h,front=false){
  squareBox(x,h/2,z,w,h,d,0x504650,true);
@@ -227,7 +234,7 @@ const squareReady=Promise.all([['barrel_large',-8,4,1.1],['barrel_small_stack',8
  const g=fit(gltf.scene.clone(true),height);g.position.add(new THREE.Vector3(x,0,z));g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});squareRoot.add(g);squareSolids.push({x,z,w:1.5,d:1.5});
 }));
 const morning=new THREE.DirectionalLight(0xffcb91,3);morning.position.set(55,12,-25);morning.target.position.set(80,0,0);scene.add(morning,morning.target);
-renderer.shadowMap.enabled=settings.quality!=='performance';renderer.shadowMap.type=THREE.PCFSoftShadowMap;morning.castShadow=true;
+renderer.shadowMap.enabled=settings.quality!=='performance';renderer.shadowMap.type=THREE.PCFShadowMap;morning.castShadow=true;
 morning.shadow.mapSize.set(1024,1024);Object.assign(morning.shadow.camera,{left:-28,right:28,top:28,bottom:-28,near:1,far:90});morning.shadow.bias=-.0005;morning.shadow.normalBias=.03;morning.shadow.radius=3;
 function squareEnter(z){inInn=false;inSquare=true;actor.position.set(80,0,z);view.anchor.copy(actor.position).y+=CAMERA_HEAD_HEIGHT;log('SESSION','Morning in the square. The inn is north; the road south leads to the clearing.');}
 function squareMove(direction,speed,dt){
