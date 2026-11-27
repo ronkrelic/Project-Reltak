@@ -131,7 +131,7 @@ for(const [x,z] of [[-3,0],[-3,3.5],[1,-2.4]]){
  for(const dz of [-1.1,1.1])innProp('chair',x,0,z+dz,1.1,dz<0?0:Math.PI,.65,.65);
  innLamp(x,2.5,z,0xffb36a,12);
 }
-innProp('barrel_large',5,0,4.8,1.1);innProp('barrel_small_stack',4,0,5,1.2);
+innProp('barrel_large',5,0,-5,1.1);innProp('barrel_small_stack',4,0,-5,1.2);
 // Built masonry hearth and flames: architectural geometry, not a borrowed building sprite.
 innBox(-5.45,.14,2.2,1,.28,2.3,0x56505a,innRoot,true);
 for(const z of [1.2,3.2])innBox(-5.45,1,z,1,1.8,.3,0x4a444d,innRoot,true);
