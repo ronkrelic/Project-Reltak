@@ -22,6 +22,9 @@ html[data-reduce-motion="true"] .hud-bar>div{transition:none}
 .hud-chat-line{font-size:12px;line-height:1.45;text-shadow:0 1px 2px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #hud-hotbar{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:6px}
 .hud-slot{width:44px;height:44px;background:var(--ui-panel-mid,rgba(10,14,22,.75));border:1px solid var(--ui-accent,#c8a24a);box-shadow:0 2px 6px #000;position:relative}
+.hud-slot[data-state="spent"],.hud-slot[data-state="unavailable"]{opacity:.4}
+.hud-slot b{display:block;margin:14px 2px 0;font-size:8px;line-height:1.1;font-weight:normal;overflow-wrap:anywhere}
+#hud-focus{position:absolute;bottom:66px;left:50%;transform:translateX(-50%);font-size:12px;color:var(--ui-accent,#c8a24a)}
 .hud-slot span{position:absolute;top:2px;left:4px;font-size:10px;color:var(--ui-subtitle,#cfc4a6)}
 #hud-help{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(4,7,12,.65);pointer-events:auto}
 #hud-help.open{display:flex}
@@ -73,12 +76,25 @@ export const HUD={
   pending.length=0;
   const help=document.createElement('div');help.id='hud-help';
   let rows='';
-  const keys=[['WASD','Move'],['Hold Shift','Run'],['Click or F','Attack'],['Drag','Orbit camera'],['Scroll','Zoom'],['L','Save session log'],['F1','This help'],['Escape','Title screen']];
+  const keys=[['1 / 2 / 3','Class abilities'],['WASD','Move'],['Hold Shift','Run'],['Click or F','Attack'],['Drag','Orbit camera'],['Scroll','Zoom'],['L','Save session log'],['F1','This help'],['Escape','Title screen']];
   for(const pair of keys)rows+='<div class="hud-help-row"><span class="hud-help-key">'+pair[0]+'</span><span>'+pair[1]+'</span></div>';
   help.innerHTML='<div id="hud-help-box"><p id="hud-help-title">Controls</p>'+rows+'<p id="hud-help-foot">Press F1 or Escape to close</p></div>';
   help.addEventListener('click',function(){if(helpOpen)toggleHelp();});
   root.append(help);
   drawMap(0,0);
+ },
+ setAbilities(abilities){
+  const slots=root.querySelectorAll('.hud-slot');
+  for(const ability of abilities){const slot=slots[ability.key-1],label=document.createElement('b');label.textContent=ability.name;slot.append(label);slot.title=ability.name+' — '+ability.cost;}
+ },
+ setAbilityState(key,state){
+  const slot=root?.querySelectorAll('.hud-slot')[key-1];
+  if(slot){slot.dataset.state=state;slot.setAttribute('aria-label',slot.textContent+' — '+state);}
+ },
+ setFocus(value){
+  let node=document.getElementById('hud-focus');
+  if(!node){node=document.createElement('p');node.id='hud-focus';root.append(node);}
+  node.textContent='Focus '+('◆'.repeat(value))+('◇'.repeat(2-value));
  },
  message(text,tag){
   if(!chat){pending.push({text,tag});return;}
