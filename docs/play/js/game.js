@@ -109,7 +109,7 @@ function innSurface(geometry,color){
  uv.needsUpdate=true;return surfaceMaterials.get(name);
 }
 
-// The inn: roofless, camera-aware cutaway; dimensions in metres, no place names.
+// The inn: roofless, complete walls; dimensions in metres, no place names.
 const innRoot=new THREE.Group(),innUpper=new THREE.Group(),innWalls=[],innSolids=[];
 innRoot.position.x=40;scene.add(innRoot);innRoot.add(innUpper);
 let inInn=true;const innAssets=[];
@@ -127,25 +127,40 @@ function innProp(file,x,y,z,height,turn=0,w=.9,d=.9){
  (y>=3?innUpper:innRoot).add(g);});
  innSolids.push({x,z,w,d,y,top:y+height});
 }
-innBox(0,-.15,0,12,.3,12,0x3a3030);
+// Keep oak above the world plane (y=0), avoiding coplanar teal ground bleed.
+innBox(0,-.13,0,12,.3,12,0x3a3030);
+// Local stone apron only: do not change terrain elsewhere in the world.
+for(const x of [-7,7])innBox(x,-.045,0,2,.1,16,0x56505a);
+for(const z of [-7,7])innBox(0,-.045,z,12,.1,2,0x56505a);
 innBox(-1.5,3.05,0,9,.3,12,0x47372f,innUpper);
 innBox(4.5,3.05,-5,3,.3,2,0x47372f,innUpper);
 for(let i=0;i<16;i++){const h=3.2*(16-i)/16;innBox(4.4,h/2,-3.75+i*.5,2.5,h,.5,0x594435);}
-for(const y of [1.5,4.7]){
- const g=y>3?innUpper:innRoot;
- innWall(-6,y,0,.25,3,12,g);innWall(6,y,0,.25,3,12,g);
- innWall(0,y,-6,12,3,.25,g);
- if(y<3){innWall(-3.7,y,6,4.6,3,.25,g);innWall(3.7,y,6,4.6,3,.25,g);innBox(0,2.85,6,2.8,.3,.3,0x563b2d);}
- else innWall(0,y,6,12,3,.25,g);
- for(const x of [-5.8,0,5.8])innBox(x,y, -5.8,.22,3,.3,0x231c21,g);
+for(const [y,h] of [[1.6,3.2],[4.9,3.4]]){
+ const g=innRoot;
+ innWall(-6,y,0,.25,h,12,g);innWall(6,y,0,.25,h,12,g);
+ innWall(0,y,-6,12,h,.25,g);
+ if(y<3){innWall(-3.7,y,6,4.6,h,.25,g);innWall(3.7,y,6,4.6,h,.25,g);innBox(0,2.85,6,2.8,.3,.3,0x563b2d);}
+ else innWall(0,y,6,12,h,.25,g);
+ for(const z of [-5.8,5.8])for(const x of [-5.8,0,5.8]){
+  if(z>0&&x===0&&y<3)continue; // Keep the doorway open.
+  innBox(x,y,z,.22,h,.3,0x231c21,g);
+ }
 }
+// Matching oak sills, floor band and top caps close the half-timbered frame.
+for(const y of [.15,3.1,6.5]){
+ for(const x of [-5.8,5.8])innBox(x,y,0,.3,.22,12,0x231c21);
+ innBox(0,y,-5.8,12,.22,.3,0x231c21);
+ if(y<1)for(const x of [-3.7,3.7])innBox(x,y,5.8,4.6,.22,.3,0x231c21);
+ else innBox(0,y,5.8,12,.22,.3,0x231c21);
+}
+// Oak fascia seals the exposed slab edge around the stairwell.
+innBox(3,3.05,1,.12,.3,10,0x47372f,innUpper);
+innBox(4.5,3.05,-4,3,.3,.12,0x47372f,innUpper);
 // Bedroom door into a short landing; the stairwell is open to the common room.
 innWall(1,4.7,-3.5,.18,3,5,innUpper);innWall(1,4.7,3,.18,3,6,innUpper);
 innBox(1,6,-.5,.26,.3,1,0x684b34,innUpper);
-// Window opening is set into the west wall as a luminous inset with open shutters.
-innBox(-5.83,4.9,-2,.08,1.25,1.65,0xc6b895,innUpper);
-for(const z of [-3.05,-.95]){const shutter=innBox(-5.45,4.9,z,.1,1.5,.65,0x392b2b,innUpper);shutter.rotation.y=z<-2?-.6:.6;}
-innLamp(-5.1,5,-2,0xffddb0,22);
+// Closed oak shutters cover the inset; no bright pane or window light.
+for(const z of [-2.42,-1.58])innBox(-5.78,4.9,z,.12,1.5,.84,0x392b2b,innUpper);
 innProp('bed_decorated',-3.9,3.2,-3.3,1.05,0,1.7,2.8);
 innProp('chest',-4.6,3.2,1,.7,0,1.3,.8);
 innProp('table_small',-3.8,3.2,4.7,.85,0,1.3,.8);
@@ -154,7 +169,9 @@ innBox(-2,3.215,0,2.8,.025,3.2,0x5e2734,innUpper);
 // Bar, shelves, bottles and three seating clusters leave a clear central aisle.
 innBox(-3.9,.6,-3.5,3.3,1.2,.8,0x4d302b,innRoot,true);
 innBox(-3.9,1.24,-3.5,3.6,.12,1,0x77523c);
-innProp('shelf_large',-4.2,0,-5.35,2.3,0,2.4,.65);
+// This is a low wall shelf, not a tall bookcase: native size is 2 x .45 x .5.
+// Height-only fitting to 2.3m made it 10.22m wide and spill through the wall.
+innProp('shelf_large',-4.2,1.45,-5.35,.54,0,2.4,.65);
 for(let i=0;i<6;i++)innProp(i%2?'bottle_A_green':'bottle_B_brown',-5+i*.43,1.32,-3.5,.3,0,.1,.1);
 for(const [x,z] of [[-3,0],[-3,3.5],[1,-2.4]]){
  innProp('table_medium',x,0,z,.85,0,1.6,1.2);
@@ -169,7 +186,7 @@ innBox(-5.45,1.9,2.2,1.2,.3,2.5,0x69616a);
 for(let i=0;i<5;i++){const f=new THREE.Mesh(new THREE.ConeGeometry(.14,.5+i%2*.25,6),new THREE.MeshBasicMaterial({color:i%2?0xffd47d:0xf27436}));f.position.set(-5.2,.5,1.6+i*.3);innRoot.add(f);}
 const innFire=innLamp(-4.9,.9,2.2,0xff8a43,28);
 innBox(0,.012,2.2,1.8,.025,4,0x622e3a);
-innBox(0,-.04,7.1,3,.15,2.2,0x655c65);
+innBox(0,-.04,7.1,3,.15,2.2,0x56505a);
 // Exterior slice: neutral architecture, world-space collision, no camera assumptions.
 const squareRoot=new THREE.Group(),squareSolids=[],squareRoofs=[];
 squareRoot.position.x=80;scene.add(squareRoot);let inSquare=false;
@@ -304,7 +321,7 @@ function innMove(direction,speed,dt){
 }
 function innCutaway(time){
  innUpper.visible=inInn&&actor.position.y>2.9;
- for(const m of innWalls){const local=m.position; m.visible=!(camera.position.x<34&&local.x< -5||camera.position.x>46&&local.x>5||camera.position.z>6&&local.z>5||camera.position.z< -6&&local.z< -5);}
+ // Walls remain complete at every view angle; only upstairs contents are hidden below.
  innFire.intensity=26+Math.sin(time*7)*2;
 }
 const innReady=Promise.all(innAssets.map(fn=>fn()));
