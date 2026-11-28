@@ -22,8 +22,16 @@ export const CREATURES={
       weapon:{path:'assets/weapons/adventurers/staff.gltf',slot:'handslotr'}}
   },
   Goblin:{
+    name:'Goblin',label:'goblin',
     hp:6,attackBonus:2,defense:12,damage:{count:1,sides:4,bonus:0},
     ai:{runSpeed:5,aggroRadius:10,attackReach:1.8,attackCooldown:1.5,impactAt:0.5,staggerSeconds:0.4},
+    model:{path:'assets/characters/monsters/Goblin.glb',height:1.1,
+      clipSuffixes:{idle:'Idle',run:'Run',attack:'Attack',hit:'HitRecieve',death:'Death'}}
+  },
+  AshSlinger:{
+    name:'Ash Sling Marauder',label:'ash slinger',ranged:true,tint:0x969891,
+    hp:5,attackBonus:2,defense:11,damage:{count:1,sides:3,bonus:0},
+    ai:{runSpeed:5.1,aggroRadius:10,retreatRange:5,attackReach:12,attackCooldown:3,impactAt:.5,staggerSeconds:.4},
     model:{path:'assets/characters/monsters/Goblin.glb',height:1.1,
       clipSuffixes:{idle:'Idle',run:'Run',attack:'Attack',hit:'HitRecieve',death:'Death'}}
   }
