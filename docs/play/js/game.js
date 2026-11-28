@@ -20,6 +20,8 @@ const CHARACTER_HEIGHT=2, MAX_FRAME_DELTA=0.05, ANIMATION_FADE=0.18;
 const CAMERA_MIN_DISTANCE=0.2, CAMERA_MAX_DISTANCE=20, CAMERA_DEFAULT_DISTANCE=6;
 const CAMERA_DEFAULT_YAW=0, CAMERA_DEFAULT_PITCH=0.3;
 const CAMERA_MIN_PITCH=-0.15, CAMERA_MAX_PITCH=1.3;
+// Avoid the lookAt/up-vector singularity without changing orbit limits.
+const CAMERA_LOOK_PITCH=Math.PI/2-0.001;
 const CAMERA_HEAD_HEIGHT=1.65, CAMERA_HIDE_DISTANCE=1.2;
 const CAMERA_LOCK_DISTANCE=CAMERA_HIDE_DISTANCE, CAMERA_LOOK_SENSITIVITY=0.003;
 const CAMERA_ORBIT_SENSITIVITY=0.005, CAMERA_ZOOM_SENSITIVITY=0.0015;
@@ -705,7 +707,7 @@ document.addEventListener('pointerlockerror',()=>{releaseDrag();updateLookHint()
 document.addEventListener('mousemove',event=>{
  if(!isLocked())return;
  view.yaw-=event.movementX*CAMERA_LOOK_SENSITIVITY;
- view.pitch=THREE.MathUtils.clamp(view.pitch+event.movementY*CAMERA_LOOK_SENSITIVITY,CAMERA_MIN_PITCH,CAMERA_MAX_PITCH);
+ view.pitch=THREE.MathUtils.clamp(view.pitch+event.movementY*CAMERA_LOOK_SENSITIVITY,-CAMERA_LOOK_PITCH,CAMERA_LOOK_PITCH);
 });
 window.addEventListener('keydown',event=>{
  if(event.code==='Escape'){if(!document.pointerLockElement)location.href='index.html';return;}
@@ -802,7 +804,12 @@ function updateView(dt){
  anchorTarget.copy(actor.position).y+=CAMERA_HEAD_HEIGHT;
  view.anchor.lerp(anchorTarget,1-Math.exp(-CAMERA_FOLLOW_RESPONSE*dt));
  view.distance=THREE.MathUtils.lerp(view.distance,view.targetDistance,1-Math.exp(-CAMERA_ZOOM_RESPONSE*dt));
- offset.set(Math.sin(view.yaw)*Math.cos(view.pitch),Math.sin(view.pitch),Math.cos(view.yaw)*Math.cos(view.pitch));
+ // Blend extended look limits back to the original orbit interval on zoom out.
+ const lookBlend=THREE.MathUtils.smoothstep(view.distance,CAMERA_LOCK_DISTANCE,CAMERA_DEFAULT_DISTANCE);
+ const orbitPitch=THREE.MathUtils.clamp(view.pitch,CAMERA_MIN_PITCH,CAMERA_MAX_PITCH);
+ const pitch=THREE.MathUtils.lerp(view.pitch,orbitPitch,lookBlend);
+ if(view.distance>=CAMERA_DEFAULT_DISTANCE)view.pitch=orbitPitch;
+ offset.set(Math.sin(view.yaw)*Math.cos(pitch),Math.sin(pitch),Math.cos(view.yaw)*Math.cos(pitch));
  camera.position.copy(view.anchor).addScaledVector(offset,view.distance);
  // The same forward vector works at every arm length, including first person.
  camera.lookAt(new THREE.Vector3().copy(camera.position).sub(offset));
