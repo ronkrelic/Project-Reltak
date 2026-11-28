@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {clone as cloneRig} from 'three/addons/utils/SkeletonUtils.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {loadSettings} from './settings.js';
 import {applyTheme} from './theme.js';
@@ -348,12 +349,15 @@ async function loadScenery(){
 innBox(0,.015,-21.6,3,.03,2.8,0x655c65,scene);
 // The duel. Everything here is game logic and staging; none of it knows the camera.
 let playerHP=stats.hp,playerDead=false,playerStagger=0,attack=null,attackCooldown=0,arrowTemplate=null;
-const projectiles=[],goblinMaterials=[];let goblin=null;
+const projectiles=[],enemies=[];let goblin=null;
+function chooseEnemy(){
+ return enemies.filter(e=>e.alive).sort((a,b)=>actor.position.distanceToSquared(a.group.position)-actor.position.distanceToSquared(b.group.position))[0]||null;
+}
 HUD.build(character.name,character.class);
 function updateBars(){HUD.setHealth(playerHP,stats.hp);}
 updateBars();
 const kit=ABILITIES[character.class],spentCombat=new Set(),spentCamp=new Set();
-let focus=2,guard=null,quarry=false,rootSeconds=0;
+let focus=2,guard=null,quarry=false;
 HUD.setAbilities(kit);
 function abilityState(a){
  if(spentCombat.has(a.key)||spentCamp.has(a.key))return 'spent';
@@ -373,11 +377,13 @@ function useAbility(key){
  if(a.type==='advantage'){quarry=true;spentCombat.add(a.key);}
  log('COMBAT',character.name+' '+a.flavor);refreshAbilities();
 }
-function playerRoll(){
+function playerRoll(goblin){
+ const goblinData=goblin.data;
  const a=attack?.ability,result=resolveAttack(a?.damage?{...stats,damage:a.damage}:stats,goblinData,{advantage:attack?.advantage||false});
  quarry=false;return result;
 }
 function logRoll(result){
+ if(result.disadvantage)log('COMBAT','Disadvantage: d20 '+result.attackRolls.join(' / ')+' -> '+result.d20+'.');
  if(result.advantage)log('COMBAT','Advantage: d20 '+result.attackRolls.join(' / ')+' -> '+result.d20+'.');
  log('COMBAT','d20 '+result.d20+' + '+result.attackBonus+' = '+result.total+' vs defense '+result.defense+' -> '+(result.nat1?'automatic miss':result.crit?'CRITICAL HIT':result.hit?'hit':'miss'));
 }
@@ -394,27 +400,30 @@ async function loadArrowTemplate(){
  if(!stats.attack.projectileAsset)return;
  try{arrowTemplate=await loader.loadAsync(stats.attack.projectileAsset);}catch(error){log('ASSET','Projectile unavailable: '+stats.attack.projectileAsset);}
 }
-function spawnGoblin(gltf){
+function spawnGoblin(gltf,data=goblinData,spawn=GOBLIN_SPAWN){
+ const goblinData=data;
  const group=new THREE.Group();
- const body=fit(gltf.scene,goblinData.model.height);
- group.add(body);group.position.set(GOBLIN_SPAWN.x,0,GOBLIN_SPAWN.z);scene.add(group);
+ const body=fit(cloneRig(gltf.scene),goblinData.model.height);
+ group.add(body);group.position.set(spawn.x,0,spawn.z);scene.add(group);
  const goblinMixer=new THREE.AnimationMixer(body),acts={};
  for(const [key,suffix] of Object.entries(goblinData.model.clipSuffixes)){
   const clip=gltf.animations.find(a=>a.name.split('|').pop()===suffix);
   if(clip)acts[key]=goblinMixer.clipAction(clip);else console.warn('Goblin clip unavailable: '+key+' ('+suffix+')');
  }
  for(const key of ['attack','hit','death'])if(acts[key]){acts[key].setLoop(THREE.LoopOnce,1);acts[key].clampWhenFinished=true;}
- goblin={group,mixer:goblinMixer,actions:acts,activeAction:null,animName:'none',hp:goblinData.hp,alive:true,aggro:false,state:'idle',attackT:0,attackHit:false,attackCooldown:0,stagger:0,deadClock:null};
- playGoblin('idle');updateBars();
- log('SESSION','A goblin waits at the far edge of the clearing.');
+ const goblin={data,materials:[],rootSeconds:0,group,mixer:goblinMixer,actions:acts,activeAction:null,animName:'none',hp:goblinData.hp,alive:true,aggro:false,state:'idle',attackT:0,attackHit:false,attackCooldown:0,stagger:0,deadClock:null};
+ group.traverse(o=>{if(o.isMesh){o.material=Array.isArray(o.material)?o.material.map(m=>m.clone()):o.material.clone();for(const m of (Array.isArray(o.material)?o.material:[o.material])){if(data.tint){m.color.setHex(data.tint);m.map=null;}goblin.materials.push(m);}}});
+ enemies.push(goblin);playGoblin('idle',goblin);updateBars();
+ log('SESSION',data.ranged?'An ash slinger watches the clearing from the east.':'A goblin waits at the far edge of the clearing.');
+ return goblin;
 }
-function playGoblin(name){
+function playGoblin(name,goblin){
  const next=goblin.actions[name]||goblin.actions.idle;
  if(!next||next===goblin.activeAction)return;
  goblin.activeAction?.fadeOut(ANIMATION_FADE);next.reset().fadeIn(ANIMATION_FADE).play();
  goblin.activeAction=next;goblin.animName=next.getClip().name;
 }
-function beginAttack(ability=kit[0]){
+function beginAttack(ability=kit[0],goblin=chooseEnemy()){
  if(!model||playerDead||attack||playerStagger>0||attackCooldown>0)return;
  dismiss();
  const a=stats.attack,first=a.clips.draw?'draw':'attack';
@@ -425,7 +434,7 @@ function beginAttack(ability=kit[0]){
  if(ability.cost==='camp')spentCamp.add(ability.key);
  if(ability.cost==='focus'){focus--;if(focus===0)guard=null;}
  if(ability.flavor)log('COMBAT',character.name+' '+ability.flavor);
- attack={ability,steps:a.clips.draw?[{clip:'draw',fireAt:null},{clip:'release',fireAt:a.fireAt}]:[{clip:first,fireAt:a.fireAt}],index:0,t:0,fired:false};
+ attack={ability,target:goblin,steps:a.clips.draw?[{clip:'draw',fireAt:null},{clip:'release',fireAt:a.fireAt}]:[{clip:first,fireAt:a.fireAt}],index:0,t:0,fired:false};
  play(first);
  log('COMBAT',character.name+' '+(a.type==='melee'?'swings':a.projectile==='arrow'?'draws the bow':'weaves a spell')+'.');
 }
@@ -442,20 +451,22 @@ function updateAttack(dt){
  }
 }
 function fireAttack(){
+ const goblin=attack.target;
  attack.advantage=quarry;quarry=false;
  const a=stats.attack;
  if(a.type==='melee'){
   if(!inInn&&!inSquare&&goblin&&goblin.alive){
    goblin.aggro=true;
    if(actor.position.distanceTo(goblin.group.position)<=a.range){
-    const result=playerRoll();logRoll(result);
-    if(result.hit)damageGoblin(result.damage,result.crit);
+    const result=playerRoll(goblin);logRoll(result);
+    if(result.hit)damageGoblin(result.damage,result.crit,goblin);
    }else log('COMBAT','The swing falls short.');
    updateBars();
   }else log('COMBAT','You swing at empty night.');
  }else spawnProjectile();
 }
 function spawnProjectile(){
+ const goblin=attack.target,goblinData=goblin?.data;
  const a=stats.attack,origin=actor.position.clone();origin.y+=1.4;
  let mesh;
  if(a.projectile==='arrow'&&arrowTemplate)mesh=arrowTemplate.scene.clone(true);
@@ -463,9 +474,9 @@ function spawnProjectile(){
  if(attack?.ability.damage){mesh.scale.multiplyScalar(1.6);mesh.material.color.setHex(0xffb45b);}
  scene.add(mesh);mesh.position.copy(origin);
  let result=null,homing=false,target=null;
- if(!inInn&&!inSquare&&goblin&&goblin.alive){
+ if(!inInn&&!inSquare&&goblin&&goblin.alive&&actor.position.distanceTo(goblin.group.position)<=a.range){
   goblin.aggro=true;
-  result=playerRoll();logRoll(result);
+  result=playerRoll(goblin);logRoll(result);
   const chest=goblin.group.position.clone();chest.y+=goblinData.model.height*0.6;
   if(result.hit){homing=true;target=chest;}
   else{
@@ -474,20 +485,43 @@ function spawnProjectile(){
   }
  }
  const direction=target?target.clone().sub(origin).normalize():new THREE.Vector3(Math.sin(actor.rotation.y),0,Math.cos(actor.rotation.y));
- projectiles.push({mesh,velocity:direction.multiplyScalar(a.speed),speed:a.speed,homing,target,result,root:attack?.ability.root||0,gravity:a.gravity,asset:a.projectile});
+ projectiles.push({enemy:goblin,mesh,velocity:direction.multiplyScalar(a.speed),speed:a.speed,homing,target,result,root:attack?.ability.root||0,gravity:a.gravity,asset:a.projectile});
  log('COMBAT',(a.projectile==='arrow'?'An arrow':'A bolt of pale light')+(result===null?' leaps into the dark.':result.hit?' flies true.':' flies wide.'));
  updateBars();
 }
+function throwStone(enemy){
+ if(playerDead||inInn||inSquare)return;
+ const distance=actor.position.distanceTo(enemy.group.position);
+ if(distance>enemy.data.ai.attackReach){log('COMBAT','The ash slinger holds its stone; the quarry is too far.');return;}
+ const result=resolveAttack(enemy.data,stats,{disadvantage:distance<=(stats.attack.type==='melee'?stats.attack.range:1.8)});
+ logRoll(result);
+ const mesh=new THREE.Mesh(new THREE.SphereGeometry(.12,8,6),new THREE.MeshStandardMaterial({color:0x92928c}));
+ mesh.position.copy(enemy.group.position).y+=.8;scene.add(mesh);
+ const target=actor.position.clone().add(new THREE.Vector3(0,1,0));
+ if(!result.hit)target.x+=PROJECTILE_MISS_OFFSET;
+ projectiles.push({mesh,hostile:true,result,target,speed:12,life:3,homing:result.hit,velocity:target.clone().sub(mesh.position).normalize().multiplyScalar(12)});
+}
 function updateProjectiles(dt){
  for(let i=projectiles.length-1;i>=0;i--){
-  const p=projectiles[i];
+  const p=projectiles[i],goblin=p.enemy,goblinData=goblin?.data;
+  if(p.hostile){
+   p.life-=dt;
+   if(playerDead||inInn||inSquare||p.life<=0){scene.remove(p.mesh);p.mesh.geometry.dispose();p.mesh.material.dispose();projectiles.splice(i,1);continue;}
+   const target=p.homing?actor.position.clone().add(new THREE.Vector3(0,1,0)):p.target;
+   if(p.mesh.position.distanceTo(target)<=Math.max(PROJECTILE_CONNECT_RADIUS,p.speed*dt)){
+    if(p.result.hit)damagePlayer(p.result.damage,p.result.crit);
+    else log('COMBAT','The ash slinger’s stone flies wide.');
+    scene.remove(p.mesh);p.mesh.geometry.dispose();p.mesh.material.dispose();projectiles.splice(i,1);continue;
+   }
+   p.mesh.position.addScaledVector(target.clone().sub(p.mesh.position).normalize(),p.speed*dt);continue;
+  }
   if(p.homing){
    const chest=goblin&&goblin.alive?goblin.group.position.clone().setY(goblin.group.position.y+goblinData.model.height*0.6):p.target;
    p.velocity.lerp(chest.clone().sub(p.mesh.position).normalize().multiplyScalar(p.speed),Math.min(1,8*dt)).setLength(p.speed);
    if(p.mesh.position.distanceTo(chest)<=Math.max(PROJECTILE_CONNECT_RADIUS,p.speed*dt)){
     if(p.result&&p.result.hit){
-     damageGoblin(p.result.damage,p.result.crit);
-     if(p.root&&goblin?.alive){rootSeconds=p.root;log('COMBAT','Roots bind the goblin.');}
+     damageGoblin(p.result.damage,p.result.crit,goblin);
+     if(p.root&&goblin?.alive){goblin.rootSeconds=p.root;log('COMBAT','Roots bind the '+goblin.data.label+'.');}
     }
     scene.remove(p.mesh);projectiles.splice(i,1);continue;
    }
@@ -497,24 +531,26 @@ function updateProjectiles(dt){
   if(p.mesh.position.y<=0||p.mesh.position.length()>CLEARING_RADIUS+15){scene.remove(p.mesh);projectiles.splice(i,1);log('COMBAT','The shot is swallowed by the dark.');}
  }
 }
-function damageGoblin(amount,crit){
+function damageGoblin(amount,crit,goblin){
+ const goblinData=goblin?.data;
  if(!goblin||!goblin.alive)return;
  goblin.hp-=amount;updateBars();
- log('COMBAT','Goblin takes '+amount+(crit?', a critical blow!':'')+' -> '+Math.max(0,goblin.hp)+' of '+goblinData.hp+' hp');
- if(goblin.hp<=0){killGoblin();return;}
+ log('COMBAT',goblinData.name+' takes '+amount+(crit?', a critical blow!':'')+' -> '+Math.max(0,goblin.hp)+' of '+goblinData.hp+' hp');
+ if(goblin.hp<=0){killGoblin(goblin);return;}
  goblin.stagger=goblinData.ai.staggerSeconds;
  if(goblin.state==='attack')goblin.state='chase';
- playGoblin('hit');
+ playGoblin('hit',goblin);
 }
-function killGoblin(){
- spentCombat.clear();quarry=false;guard=null;rootSeconds=0;refreshAbilities();
- goblin.alive=false;goblin.state='dead';goblin.deadClock=0;
- playGoblin('death');
- goblinMaterials.length=0;
- goblin.group.traverse(object=>{for(const material of (Array.isArray(object.material)?object.material:object.material?[object.material]:[])){material.transparent=true;goblinMaterials.push(material);}});
- log('COMBAT','The goblin falls.');updateBars();
+function killGoblin(goblin){
+ goblin.alive=false;goblin.state='dead';goblin.deadClock=0;goblin.rootSeconds=0;
+ if(enemies.every(e=>!e.alive)){spentCombat.clear();quarry=false;guard=null;refreshAbilities();log('COMBAT','The clearing is still. Combat abilities renewed.');}
+ playGoblin('death',goblin);
+ goblin.group.traverse(object=>{for(const material of (Array.isArray(object.material)?object.material:object.material?[object.material]:[])){material.transparent=true;goblin.materials.includes(material)||goblin.materials.push(material);}});
+ log('COMBAT','The '+goblin.data.label+' falls.');updateBars();
 }
-function goblinStrike(){
+function goblinStrike(goblin){
+ const goblinData=goblin.data;
+ if(goblinData.ranged){throwStone(goblin);return;}
  if(playerDead)return;
  if(actor.position.distanceTo(goblin.group.position)>goblinData.ai.attackReach+0.6){log('COMBAT','The goblin slashes empty air.');return;}
  const result=resolveAttack(goblinData,stats);logRoll(result);
@@ -540,45 +576,61 @@ function playerDeath(){
  void veil.offsetWidth;veil.classList.add('fallen');
  setTimeout(()=>{location.href='index.html';},PLAYER_DEATH_RETURN_SECONDS*1000);
 }
-function updateGoblin(dt){
+function updateGoblin(dt,goblin){
+ const goblinData=goblin.data;
+ goblin.rootSeconds=Math.max(0,goblin.rootSeconds-dt);
  if(!goblin||inInn||inSquare)return;
  goblin.mixer.update(dt);
  if(!goblin.alive){
   if(goblin.deadClock!==null){
    goblin.deadClock+=dt;
    const fade=Math.max(0,1-goblin.deadClock/GOBLIN_FADE_SECONDS);
-   for(const material of goblinMaterials)material.opacity=fade;
-   if(goblin.deadClock>=GOBLIN_FADE_SECONDS){scene.remove(goblin.group);goblin.deadClock=null;log('COMBAT','The goblin fades into the night.');}
+   for(const material of goblin.materials)material.opacity=fade;
+   if(goblin.deadClock>=GOBLIN_FADE_SECONDS){scene.remove(goblin.group);goblin.deadClock=null;log('COMBAT','The '+goblin.data.label+' fades into the night.');}
   }
   return;
  }
  if(goblin.stagger>0){goblin.stagger-=dt;return;}
  if(goblin.attackCooldown>0)goblin.attackCooldown-=dt;
- if(playerDead){goblin.state='idle';playGoblin('idle');return;}
+ if(playerDead){goblin.state='idle';playGoblin('idle',goblin);return;}
  const toPlayer=actor.position.clone().sub(goblin.group.position),distance=toPlayer.length();
  if(!goblin.aggro){
-  if(distance<=goblinData.ai.aggroRadius){goblin.aggro=true;log('COMBAT','The goblin bristles and charges.');updateBars();}
-  else{playGoblin('idle');return;}
+  if(distance<=goblinData.ai.aggroRadius){goblin.aggro=true;log('COMBAT',goblinData.ranged?'The ash slinger readies a stone.':'The goblin bristles and charges.');updateBars();}
+  else{playGoblin('idle',goblin);return;}
  }
  if(goblin.state==='attack'){
   goblin.attackT+=dt;
   const duration=goblin.actions.attack?goblin.actions.attack.getClip().duration:1;
-  if(!goblin.attackHit&&goblin.attackT>=duration*goblinData.ai.impactAt){goblin.attackHit=true;goblinStrike();}
-  if(goblin.attackT>=duration){goblin.state='chase';goblin.attackCooldown=goblinData.ai.attackCooldown;playGoblin('run');}
+  if(!goblin.attackHit&&goblin.attackT>=duration*goblinData.ai.impactAt){goblin.attackHit=true;goblinStrike(goblin);}
+  if(goblin.attackT>=duration){goblin.state='chase';goblin.attackCooldown=Math.max(0,goblinData.ai.attackCooldown-(goblinData.ranged?duration:0));playGoblin('run',goblin);}
+  return;
+ }
+ if(goblinData.ranged){
+  const moving=distance<goblinData.ai.retreatRange||distance>goblinData.ai.attackReach;
+  if(moving&&goblin.rootSeconds<=0){
+   const step=toPlayer.clone().normalize().multiplyScalar(distance<goblinData.ai.retreatRange?-1:1);
+   goblin.group.position.addScaledVector(step,goblinData.ai.runSpeed*dt);
+   if(goblin.group.position.length()>CLEARING_RADIUS)goblin.group.position.setLength(CLEARING_RADIUS);
+   goblin.group.rotation.y=Math.atan2(toPlayer.x,toPlayer.z);playGoblin('run',goblin);
+  }else playGoblin('idle',goblin);
+  if(distance<=goblinData.ai.attackReach&&goblin.attackCooldown<=0){
+   goblin.state='attack';goblin.attackT=0;goblin.attackHit=false;
+   playGoblin('attack',goblin);log('COMBAT','The ash slinger hurls a stone!');
+  }
   return;
  }
  if(distance>goblinData.ai.attackReach){
-  if(rootSeconds>0){playGoblin('idle');return;}
+  if(goblin.rootSeconds>0){playGoblin('idle',goblin);return;}
   const step=toPlayer.normalize();
   goblin.group.position.addScaledVector(step,goblinData.ai.runSpeed*dt);
   if(goblin.group.position.length()>CLEARING_RADIUS)goblin.group.position.setLength(CLEARING_RADIUS);
   goblin.group.rotation.y=Math.atan2(step.x,step.z);
-  goblin.state='chase';playGoblin('run');
+  goblin.state='chase';playGoblin('run',goblin);
  }else if(goblin.attackCooldown<=0){
   goblin.state='attack';goblin.attackT=0;goblin.attackHit=false;
   goblin.group.rotation.y=Math.atan2(toPlayer.x,toPlayer.z);
-  playGoblin('attack');log('COMBAT','The goblin lunges!');
- }else{goblin.state='chase';playGoblin('idle');}
+  playGoblin('attack',goblin);log('COMBAT','The goblin lunges!');
+ }else{goblin.state='chase';playGoblin('idle',goblin);}
 }
 export const ready=(async()=>{
  const path={Warrior:'Knight',Ranger:'Ranger',Mage:'Mage'}[character.class];
@@ -610,7 +662,8 @@ export const ready=(async()=>{
  }
  play('Idle_A');
  await Promise.all([loadScenery(),equipWeapon(),loadArrowTemplate(),innReady,squareReady]);
- spawnGoblin(goblinGltf);
+ goblin=spawnGoblin(goblinGltf);
+ spawnGoblin(goblinGltf,CREATURES.AshSlinger,{x:11,z:-5});
  introTimer=setTimeout(dismiss,INTRO_SECONDS*1000);
  log('SESSION','You wake upstairs. Through the bedroom door, turn left along the landing to the stairs. The front door below leads to the square; the southern road leads to the clearing.');
  return true;
@@ -671,13 +724,14 @@ const CLICK_MOVE_PX=6,CLICK_HOLD_MS=500;
 const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
 let clickArmed=false;
 function clickAttack(event){
- if(!goblin||!goblin.alive)return false;
+ if(!enemies.some(e=>e.alive))return false;
  const rect=canvas.getBoundingClientRect();
  pointer.set(((event.clientX-rect.left)/rect.width)*2-1,-((event.clientY-rect.top)/rect.height)*2+1);
  raycaster.setFromCamera(pointer,camera);
- if(!raycaster.intersectObject(goblin.group,true).length)return false;
+ const goblin=enemies.filter(e=>e.alive).map(e=>({enemy:e,hit:raycaster.intersectObject(e.group,true)[0]})).filter(e=>e.hit).sort((a,b)=>a.hit.distance-b.hit.distance)[0]?.enemy;
+ if(!goblin)return false;
  if(actor.position.distanceTo(goblin.group.position)>stats.attack.range+0.5){log('COMBAT','Too far to strike.');return true;}
- beginAttack();
+ beginAttack(kit[0],goblin);
  return true;
 }
 canvas.addEventListener('click',event=>{
@@ -748,23 +802,22 @@ function updateView(dt){
 let last=performance.now(),frame;
 function tick(now){
  const dt=Math.min(MAX_FRAME_DELTA,(now-last)/1000);last=now;
- HUD.setPlayerPosition(actor.position.x,actor.position.z);
+ HUD.setPlayerPosition(actor.position.x,actor.position.z,enemies.map(e=>({x:e.group.position.x,z:e.group.position.z,alive:e.alive})));
  if(attackCooldown>0)attackCooldown-=dt;
  if(playerStagger>0)playerStagger-=dt;
  if(guard){guard.seconds-=dt;if(guard.seconds<=0)guard=null;}
- rootSeconds=Math.max(0,rootSeconds-dt);
  refreshAbilities();
  updateAttack(dt);
  simulate(movementIntent(),keys.has('ShiftLeft')||keys.has('ShiftRight'),dt);
- updateGoblin(dt);
+ for(const enemy of enemies)updateGoblin(dt,enemy);
  updateProjectiles(dt);
  updateView(dt);innCutaway(performance.now()/1000);squareAtmosphere();renderer.render(scene,camera);frame=requestAnimationFrame(tick);
 }
 updateView(0);frame=requestAnimationFrame(tick);
 // Read-only diagnostics for live verification; no simulation depends on this view.
-export function snapshot(){return {location:inInn?'inn':inSquare?'square':'clearing',square:{buildings:5,solids:squareSolids.length,models:3},innAssets:innAssets.length,character:{...character},hp:{player:Math.max(0,playerHP),max:stats.hp},goblin:goblin?{hp:Math.max(0,goblin.hp),max:goblinData.hp,alive:goblin.alive,aggro:goblin.aggro,state:goblin.state,animation:goblin.animName}:null,projectiles:projectiles.length,position:actor.position.toArray(),rotation:actor.rotation.y,camera:{yaw:view.yaw,pitch:view.pitch,distance:view.distance,targetDistance:view.targetDistance},modelLoaded:!!model,modelVisible:model?.visible,animation:animationName,clips:Object.keys(actions),drawCalls:renderer.info.render.calls,pixelRatio:renderer.getPixelRatio(),theme:settings.theme};}
+export function snapshot(){return {location:inInn?'inn':inSquare?'square':'clearing',square:{buildings:5,solids:squareSolids.length,models:3},innAssets:innAssets.length,character:{...character},hp:{player:Math.max(0,playerHP),max:stats.hp},goblin:goblin?{hp:Math.max(0,goblin.hp),max:goblinData.hp,alive:goblin.alive,aggro:goblin.aggro,state:goblin.state,animation:goblin.animName}:null,enemies:enemies.map(e=>({name:e.data.name,hp:Math.max(0,e.hp),max:e.data.hp,alive:e.alive,position:e.group.position.toArray(),state:e.state,rootSeconds:e.rootSeconds})),combatUses:[...spentCombat],campUses:[...spentCamp],projectiles:projectiles.length,position:actor.position.toArray(),rotation:actor.rotation.y,camera:{yaw:view.yaw,pitch:view.pitch,distance:view.distance,targetDistance:view.targetDistance},modelLoaded:!!model,modelVisible:model?.visible,animation:animationName,clips:Object.keys(actions),drawCalls:renderer.info.render.calls,pixelRatio:renderer.getPixelRatio(),theme:settings.theme};}
 window.addEventListener('pagehide',()=>{
- cancelAnimationFrame(frame);clearTimeout(introTimer);mixer?.stopAllAction();goblin?.mixer.stopAllAction();
+ cancelAnimationFrame(frame);clearTimeout(introTimer);mixer?.stopAllAction();for(const enemy of enemies)enemy.mixer.stopAllAction();
  const geometries=new Set(),materials=new Set(),textures=new Set();
  scene.traverse(object=>{if(object.geometry)geometries.add(object.geometry);for(const material of (Array.isArray(object.material)?object.material:object.material?[object.material]:[])){materials.add(material);for(const value of Object.values(material))if(value?.isTexture)textures.add(value);}});
  geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());renderer.dispose();
