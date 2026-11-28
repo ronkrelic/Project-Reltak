@@ -788,6 +788,16 @@ function simulate(direction,running,dt){
  mixer?.update(dt);
 }
 const offset=new THREE.Vector3(),anchorTarget=new THREE.Vector3();
+const platePosition=new THREE.Vector3();
+function updateEnemyPlates(){
+ // Clip-space depth rejects behind-camera points instead of mirroring them.
+ HUD.setEnemies(enemies.map((e,i)=>{
+  platePosition.copy(e.group.position);platePosition.y+=e.data.model.height+.35;platePosition.project(camera);
+  return {id:String(i),name:e.data.name,hp:e.hp,max:e.data.hp,x:(platePosition.x+1)*innerWidth/2,y:(1-platePosition.y)*innerHeight/2,
+   visible:!inInn&&!inSquare&&platePosition.z>=-1&&platePosition.z<=1&&Math.abs(platePosition.x)<=1.15&&Math.abs(platePosition.y)<=1.15,
+   opacity:e.alive?1:e.deadClock===null?0:Math.max(0,1-e.deadClock/GOBLIN_FADE_SECONDS)};
+ }));
+}
 function updateView(dt){
  anchorTarget.copy(actor.position).y+=CAMERA_HEAD_HEIGHT;
  view.anchor.lerp(anchorTarget,1-Math.exp(-CAMERA_FOLLOW_RESPONSE*dt));
@@ -811,7 +821,7 @@ function tick(now){
  simulate(movementIntent(),keys.has('ShiftLeft')||keys.has('ShiftRight'),dt);
  for(const enemy of enemies)updateGoblin(dt,enemy);
  updateProjectiles(dt);
- updateView(dt);innCutaway(performance.now()/1000);squareAtmosphere();renderer.render(scene,camera);frame=requestAnimationFrame(tick);
+ updateView(dt);updateEnemyPlates();innCutaway(performance.now()/1000);squareAtmosphere();renderer.render(scene,camera);frame=requestAnimationFrame(tick);
 }
 updateView(0);frame=requestAnimationFrame(tick);
 // Read-only diagnostics for live verification; no simulation depends on this view.
