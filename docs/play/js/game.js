@@ -80,12 +80,42 @@ function fit(object,height){
  object.position.set(-center.x*scale,-box.min.y*scale,-center.z*scale);return object;
 }
 
+// Curated painted maps; pack archives are not vendored. Metres per texture tile.
+const surfaceLoader=new THREE.TextureLoader(),surfaceMaterials=new Map();
+const surfaceKinds=new Map([
+ [0x343039,['plaster-timber-wall',3,0xb8aa8c]],
+ ...[0x3a3030,0x47372f,0x594435,0x4d302b,0x77523c,0x231c21,0x563b2d,0x684b34,0x392b2b].map(c=>[c,['dark-oak-floorboards',2,0x594435]]),
+ ...[0x56505a,0x4a444d,0x69616a].map(c=>[c,['interior-stone-wall',2,0x69616a]])
+]);
+function innSurface(geometry,color){
+ const spec=surfaceKinds.get(color);if(!spec)return new THREE.MeshStandardMaterial({color,roughness:.92});
+ const [name,metres,fallbackColor]=spec;
+ if(!surfaceMaterials.has(name)){
+  const material=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.92});
+  const texture=surfaceLoader.load('assets/textures/painted/'+name+'.jpg',()=>log('ASSET','Texture ready: '+name),undefined,()=>{
+   material.map=null;material.color.setHex(fallbackColor);material.needsUpdate=true;log('ERROR','Texture unavailable: '+name);
+  });
+  texture.colorSpace=THREE.SRGBColorSpace;texture.wrapS=texture.wrapT=THREE.RepeatWrapping;
+  texture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());material.map=texture;
+  surfaceMaterials.set(name,material);
+ }
+ // Local box-space projection preserves tile scale on walls, floors and narrow beams.
+ const p=geometry.attributes.position,n=geometry.attributes.normal,uv=geometry.attributes.uv;
+ for(let i=0;i<p.count;i++){
+  if(Math.abs(n.getY(i))>.5)uv.setXY(i,p.getX(i)/metres,p.getZ(i)/metres);
+  else if(Math.abs(n.getX(i))>.5)uv.setXY(i,p.getZ(i)/metres,p.getY(i)/metres);
+  else uv.setXY(i,p.getX(i)/metres,p.getY(i)/metres);
+ }
+ uv.needsUpdate=true;return surfaceMaterials.get(name);
+}
+
 // The inn: roofless, camera-aware cutaway; dimensions in metres, no place names.
 const innRoot=new THREE.Group(),innUpper=new THREE.Group(),innWalls=[],innSolids=[];
 innRoot.position.x=40;scene.add(innRoot);innRoot.add(innUpper);
 let inInn=true;const innAssets=[];
 function innBox(x,y,z,w,h,d,color,group=innRoot,solid=false){
- const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshStandardMaterial({color,roughness:.92}));
+ const geometry=new THREE.BoxGeometry(w,h,d);
+ const m=new THREE.Mesh(geometry,innSurface(geometry,color));
  m.position.set(x,y,z);group.add(m);
  if(solid)innSolids.push({x,z,w,d,y:y-h/2,top:y+h/2});return m;
 }
