@@ -11,11 +11,13 @@ export function rollDice({count=1,sides=6,bonus=0}={}){
 }
 // attacker needs: attackBonus, damage {count, sides, bonus}
 // defender needs: defense
-export function resolveAttack(attacker,defender,{advantage=false}={}){
+export function resolveAttack(attacker,defender,{advantage=false,disadvantage=false}={}){
+  // Opposing circumstances cancel before any extra die is rolled.
+  const both=advantage&&disadvantage;advantage=advantage&&!both;disadvantage=disadvantage&&!both;
   const attackRolls=[rollDie(20)];
-  if(advantage)attackRolls.push(rollDie(20));
-  const d20=Math.max(...attackRolls);
-  const rollInfo={attackRolls,advantage};
+  if(advantage||disadvantage)attackRolls.push(rollDie(20));
+  const d20=disadvantage?Math.min(...attackRolls):Math.max(...attackRolls);
+  const rollInfo={attackRolls,advantage,disadvantage};
   const attackBonus=attacker.attackBonus||0;
   const defense=defender.defense||10;
   const total=d20+attackBonus;
