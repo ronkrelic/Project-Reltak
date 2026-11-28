@@ -33,6 +33,7 @@ html[data-reduce-motion="true"] .hud-bar>div{transition:none}
 .hud-help-row{display:flex;justify-content:space-between;gap:24px;font-size:13px;line-height:1.9}
 .hud-help-key{color:var(--ui-accent-bright,#e4c76a)}
 #hud-help-foot{font-size:11px;color:var(--ui-subtitle,#cfc4a6);text-align:center;margin:14px 0 0}
+#hint{bottom:96px}
 #hint:empty{display:none}
 #death-veil{position:fixed;inset:0;background:#080f22;opacity:0;transition:opacity 1.2s;pointer-events:none;z-index:9}
 #death-veil.fallen{opacity:1}
