@@ -4,9 +4,12 @@ const MAP_PIXELS=168,MAP_WORLD_RADIUS=30,CELL=2,REVEAL_RADIUS=7;
 const BAR_COLORS={health:'#a1332e',mana:'#2f5fa3',stamina:'#5d8a3a',hunger:'#b06a1f',thirst:'#2f8fa3'};
 const CHAT_TAGS={SESSION:'#cfc4a6',COMBAT:'#d9a05b',ASSET:'#8fa0b8'};
 let root=null,bars={},chat=null,mapCanvas=null,mapCtx=null;
-const pending=[],revealed=new Set();
+const pending=[],revealed=new Set(),plates=new Map();
 const style=document.createElement('style');
 style.textContent=`
+.enemy-plate{position:fixed;left:0;top:0;width:154px;transform:translate(-50%,-100%);pointer-events:none;text-align:center;font:11px Cinzel,serif;color:var(--ui-text);background:var(--ui-panel-mid);border:1px solid var(--ui-accent);padding:4px 6px;z-index:5}
+.enemy-plate[hidden]{display:none}.enemy-plate .enemy-hp{height:3px;background:var(--ui-panel-dark);margin-top:3px}.enemy-plate .enemy-hp>div{height:100%;background:#b85a43}
+
 #hud-root{position:fixed;inset:0;z-index:5;pointer-events:none;font-family:Cinzel,Georgia,serif;color:var(--ui-text,#e8dcc0)}
 #hud-root p{margin:0}
 #hud-char{position:absolute;top:16px;left:16px;display:flex;gap:10px;align-items:flex-start}
@@ -42,7 +45,7 @@ html[data-reduce-motion="true"] #death-veil{transition:none}
 function barHtml(id){
  return '<div class="hud-bar"><div id="hud-bar-'+id+'" style="background:'+BAR_COLORS[id]+'"></div></div>';
 }
-function drawMap(px,pz){
+function drawMap(px,pz,enemies=[]){
  const s=MAP_PIXELS/(MAP_WORLD_RADIUS*2),c=MAP_PIXELS/2;
  mapCtx.clearRect(0,0,MAP_PIXELS,MAP_PIXELS);
  mapCtx.fillStyle='#04060a';mapCtx.fillRect(0,0,MAP_PIXELS,MAP_PIXELS);
@@ -53,10 +56,29 @@ function drawMap(px,pz){
   if(Math.abs(wx)>MAP_WORLD_RADIUS||Math.abs(wz)>MAP_WORLD_RADIUS)continue;
   mapCtx.fillRect(c+wx*s-half,c+wz*s-half,half*2+0.5,half*2+0.5);
  }
+ mapCtx.fillStyle='#b85a43';
+ for(const e of enemies){
+  if(!e.alive||!revealed.has(Math.floor(e.x/CELL)+','+Math.floor(e.z/CELL)))continue;
+  mapCtx.beginPath();mapCtx.arc(c+e.x*s,c+e.z*s,2.5,0,Math.PI*2);mapCtx.fill();
+ }
  mapCtx.fillStyle='#e4c76a';
  mapCtx.beginPath();mapCtx.arc(c+px*s,c+pz*s,3,0,Math.PI*2);mapCtx.fill();
 }
 export const HUD={
+ // Positions are projected by the view adapter, never by this pure HUD.
+ setEnemies(enemies){
+  for(const e of enemies){
+   let plate=plates.get(e.id);
+   if(!plate){
+    plate=document.createElement('div');plate.className='enemy-plate';plate.dataset.enemy=e.id;plate.hidden=true;
+    plate.innerHTML='<span></span><div class="enemy-hp"><div></div></div>';root.append(plate);plates.set(e.id,plate);
+   }
+   plate.hidden=!e.visible||e.opacity<=0;
+   plate.style.left=e.x+'px';plate.style.top=e.y+'px';plate.style.opacity=e.opacity;
+   plate.querySelector('span').textContent=e.name+' · '+Math.max(0,e.hp)+'/'+e.max;
+   plate.querySelector('.enemy-hp>div').style.width=Math.max(0,e.hp/e.max)*100+'%';
+  }
+ },
  build(name,className){
   document.head.append(style);
   root=document.createElement('div');root.id='hud-root';
@@ -109,13 +131,13 @@ export const HUD={
  setHealth(hp,max){
   if(bars.health)bars.health.style.width=Math.max(0,Math.min(1,hp/max))*100+'%';
  },
- setPlayerPosition(x,z){
+ setPlayerPosition(x,z,enemies=[]){
   if(!mapCtx)return;
   const cx=Math.floor(x/CELL),cz=Math.floor(z/CELL),r=REVEAL_RADIUS/CELL,r2=r*r;
   for(let dx=-4;dx<=4;dx++)for(let dz=-4;dz<=4;dz++){
    if(dx*dx+dz*dz<=r2)revealed.add((cx+dx)+','+(cz+dz));
   }
-  drawMap(x,z);
+  drawMap(x,z,enemies);
  }
 };
 let helpOpen=false;
